@@ -3,6 +3,9 @@ description: "백엔드 개발자 박진아의 기술 블로그"
 url: "https://jina9716.github.io"
 baseurl: ""
 
+lang: ko
+timezone: Asia/Seoul
+
 author:
   name: 박진아
   email: jina9716@naver.com
@@ -33,6 +36,7 @@ plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
   - jekyll-paginate-v2
+  - jekyll-feed
 
 pagination:
   enabled: true
