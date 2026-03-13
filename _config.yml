@@ -35,11 +35,8 @@ defaults:
 plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
-  - jekyll-paginate-v2
+  - jekyll-paginate
   - jekyll-feed
 
-pagination:
-  enabled: true
-  per_page: 5
-  permalink: "/page/:num/"
-  sort_reverse: true
+paginate: 5
+paginate_path: "/page:num/"
