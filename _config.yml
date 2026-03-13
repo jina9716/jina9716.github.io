@@ -1,0 +1,45 @@
+title: Jina Park | Backend Developer
+description: "백엔드 개발자 박진아의 기술 블로그"
+url: "https://jina9716.github.io"
+baseurl: ""
+
+lang: ko
+timezone: Asia/Seoul
+
+author:
+  name: 박진아
+  email: jina9716@naver.com
+  bio: "Backend Developer with 10+ years of experience"
+
+permalink: /blog/:year/:month/:day/:title/
+
+markdown: kramdown
+highlighter: rouge
+
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-paginate-v2
+  - jekyll-feed
+
+pagination:
+  enabled: true
+  per_page: 5
+  permalink: "/page/:num/"
+  sort_reverse: true

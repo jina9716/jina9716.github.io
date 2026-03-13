@@ -1,0 +1,45 @@
+---
+layout: default
+---
+<article class="post-detail">
+  <header class="post-detail__header">
+    <div class="container">
+      <div class="post-detail__meta">
+        <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%Y년 %m월 %d일" }}</time>
+        {% if page.tags %}
+        <div class="post-detail__tags">
+          {% for tag in page.tags %}
+          <span class="tag">{{ tag }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      <h1 class="post-detail__title">{{ page.title }}</h1>
+      {% if page.subtitle %}
+      <p class="post-detail__subtitle">{{ page.subtitle }}</p>
+      {% endif %}
+    </div>
+  </header>
+  <div class="container">
+    <div class="post-detail__content prose">
+      {{ content }}
+    </div>
+    <nav class="post-nav">
+      <div class="post-nav__links">
+        {% if page.previous.url %}
+        <a href="{{ page.previous.url | relative_url }}" class="post-nav__link post-nav__link--prev">
+          <span class="post-nav__label">&larr; 이전 글</span>
+          <span class="post-nav__title">{{ page.previous.title }}</span>
+        </a>
+        {% endif %}
+        {% if page.next.url %}
+        <a href="{{ page.next.url | relative_url }}" class="post-nav__link post-nav__link--next">
+          <span class="post-nav__label">다음 글 &rarr;</span>
+          <span class="post-nav__title">{{ page.next.title }}</span>
+        </a>
+        {% endif %}
+      </div>
+      <a href="{{ '/' | relative_url }}" class="post-nav__all">전체 글 목록</a>
+    </nav>
+  </div>
+</article>
