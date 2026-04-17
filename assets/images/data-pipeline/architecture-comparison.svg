@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
+  <style>
+    .box { fill: #fff; stroke: #333; stroke-width: 1.4; }
+    .legacy { fill: #f7f7f7; stroke: #b5b5b5; stroke-width: 1.2; }
+    .removed { fill: #fbeaea; stroke: #c46a6a; stroke-width: 1.4; stroke-dasharray: 5 3; }
+    .new { fill: #e8f3fb; stroke: #3a7ca8; stroke-width: 1.6; }
+    .snowflake { fill: #f0fbff; stroke: #2891c4; stroke-width: 1.6; }
+    .inner { fill: #fff; stroke: #2891c4; stroke-width: 1.2; }
+    .group-legacy { fill: none; stroke: #b5b5b5; stroke-width: 1.2; stroke-dasharray: 4 3; }
+    .group-new { fill: none; stroke: #3a7ca8; stroke-width: 1.4; stroke-dasharray: 4 3; }
+    .heading { font-size: 15px; font-weight: 700; fill: #111; }
+    .sublabel { font-size: 11px; fill: #666; }
+    .label { font-size: 12px; fill: #222; }
+    .small { font-size: 10.5px; fill: #555; }
+    .removed-label { font-size: 11px; font-weight: 600; fill: #c46a6a; }
+    .arrow-legacy { stroke: #888; stroke-width: 1.3; fill: none; }
+    .arrow-new { stroke: #3a7ca8; stroke-width: 1.6; fill: none; }
+  </style>
+  <defs>
+    <marker id="ar-l" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#888"/>
+    </marker>
+    <marker id="ar-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3a7ca8"/>
+    </marker>
+  </defs>
+
+  <!-- 레거시 영역 -->
+  <text class="heading" x="30" y="38">레거시 — Redshift 기반</text>
+  <rect class="group-legacy" x="20" y="50" width="920" height="170" rx="6"/>
+
+  <!-- MongoDB -->
+  <rect class="legacy" x="40" y="120" width="100" height="50" rx="4"/>
+  <text class="label" x="90" y="142" text-anchor="middle">MongoDB</text>
+  <text class="small" x="90" y="158" text-anchor="middle">운영 DB</text>
+
+  <!-- Kafka -->
+  <rect class="legacy" x="170" y="120" width="100" height="50" rx="4"/>
+  <text class="label" x="220" y="142" text-anchor="middle">Kafka</text>
+  <text class="small" x="220" y="158" text-anchor="middle">Source Connector</text>
+
+  <!-- NestJS Consumer (걷어낸 것) -->
+  <rect class="removed" x="300" y="120" width="120" height="50" rx="4"/>
+  <text class="label" x="360" y="142" text-anchor="middle">NestJS Consumer</text>
+  <text class="removed-label" x="360" y="158" text-anchor="middle">D3W Consumer</text>
+
+  <!-- AuroraDB (걷어낸 것) -->
+  <rect class="removed" x="450" y="120" width="100" height="50" rx="4"/>
+  <text class="label" x="500" y="142" text-anchor="middle">AuroraDB</text>
+  <text class="small" x="500" y="158" text-anchor="middle">PostgreSQL</text>
+
+  <!-- AWS Glue ETL (걷어낸 것) -->
+  <rect class="removed" x="580" y="120" width="100" height="50" rx="4"/>
+  <text class="label" x="630" y="142" text-anchor="middle">AWS Glue</text>
+  <text class="small" x="630" y="158" text-anchor="middle">ETL Job</text>
+
+  <!-- Redshift (Snowflake로 교체) -->
+  <rect class="legacy" x="710" y="120" width="100" height="50" rx="4"/>
+  <text class="label" x="760" y="142" text-anchor="middle">Redshift</text>
+  <text class="small" x="760" y="158" text-anchor="middle">dc2.large</text>
+
+  <!-- BI -->
+  <rect class="legacy" x="840" y="120" width="90" height="50" rx="4"/>
+  <text class="label" x="885" y="142" text-anchor="middle">Metabase</text>
+  <text class="label" x="885" y="158" text-anchor="middle">/ Tableau</text>
+
+  <!-- 화살표 (레거시) -->
+  <line class="arrow-legacy" x1="140" y1="145" x2="166" y2="145" marker-end="url(#ar-l)"/>
+  <line class="arrow-legacy" x1="270" y1="145" x2="296" y2="145" marker-end="url(#ar-l)"/>
+  <line class="arrow-legacy" x1="420" y1="145" x2="446" y2="145" marker-end="url(#ar-l)"/>
+  <line class="arrow-legacy" x1="550" y1="145" x2="576" y2="145" marker-end="url(#ar-l)"/>
+  <line class="arrow-legacy" x1="680" y1="145" x2="706" y2="145" marker-end="url(#ar-l)"/>
+  <line class="arrow-legacy" x1="810" y1="145" x2="836" y2="145" marker-end="url(#ar-l)"/>
+
+  <!-- 걷어낸 부분 라벨 -->
+  <text class="removed-label" x="495" y="98" text-anchor="middle">전환 시 걷어낸 부분 (Redshift는 Snowflake로 교체)</text>
+  <line class="arrow-legacy" x1="360" y1="105" x2="360" y2="115" marker-end="url(#ar-l)" stroke="#c46a6a"/>
+  <line class="arrow-legacy" x1="500" y1="105" x2="500" y2="115" marker-end="url(#ar-l)" stroke="#c46a6a"/>
+  <line class="arrow-legacy" x1="630" y1="105" x2="630" y2="115" marker-end="url(#ar-l)" stroke="#c46a6a"/>
+
+  <!-- 신규 영역 -->
+  <text class="heading" x="30" y="280">신규 — Snowflake 기반</text>
+  <rect class="group-new" x="20" y="292" width="920" height="210" rx="6"/>
+
+  <!-- MongoDB -->
+  <rect class="new" x="40" y="370" width="100" height="50" rx="4"/>
+  <text class="label" x="90" y="392" text-anchor="middle">MongoDB</text>
+  <text class="small" x="90" y="408" text-anchor="middle">운영 DB</text>
+
+  <!-- Kafka -->
+  <rect class="new" x="170" y="370" width="100" height="50" rx="4"/>
+  <text class="label" x="220" y="392" text-anchor="middle">Kafka</text>
+  <text class="small" x="220" y="408" text-anchor="middle">Source Connector</text>
+
+  <!-- S3 -->
+  <rect class="new" x="300" y="370" width="100" height="50" rx="4"/>
+  <text class="label" x="350" y="392" text-anchor="middle">S3</text>
+  <text class="small" x="350" y="408" text-anchor="middle">Sink Connector</text>
+
+  <!-- Snowflake (4단계 내장) -->
+  <rect class="snowflake" x="430" y="320" width="430" height="155" rx="6"/>
+  <text class="heading" x="445" y="345" fill="#2891c4" font-size="14">Snowflake</text>
+
+  <rect class="inner" x="445" y="358" width="92" height="52" rx="4"/>
+  <text class="small" x="491" y="376" text-anchor="middle" font-size="9.5">1</text>
+  <text class="label" x="491" y="392" text-anchor="middle" font-size="11.5">External Table</text>
+
+  <rect class="inner" x="547" y="358" width="92" height="52" rx="4"/>
+  <text class="small" x="593" y="376" text-anchor="middle" font-size="9.5">2</text>
+  <text class="label" x="593" y="392" text-anchor="middle" font-size="11.5">Stream</text>
+
+  <rect class="inner" x="649" y="358" width="92" height="52" rx="4"/>
+  <text class="small" x="695" y="376" text-anchor="middle" font-size="9.5">3</text>
+  <text class="label" x="695" y="392" text-anchor="middle" font-size="11.5">Task (MERGE)</text>
+
+  <rect class="inner" x="751" y="358" width="92" height="52" rx="4"/>
+  <text class="small" x="797" y="376" text-anchor="middle" font-size="9.5">4</text>
+  <text class="label" x="797" y="392" text-anchor="middle" font-size="11.5">Target Table</text>
+
+  <text class="small" x="645" y="445" text-anchor="middle">SQL만으로 CDC ETL 구성</text>
+
+  <!-- BI -->
+  <rect class="new" x="880" y="370" width="60" height="50" rx="4"/>
+  <text class="label" x="910" y="389" text-anchor="middle" font-size="11">Metabase</text>
+  <text class="label" x="910" y="403" text-anchor="middle" font-size="11">/ Tableau</text>
+
+  <!-- 화살표 (신규) -->
+  <line class="arrow-new" x1="140" y1="395" x2="166" y2="395" marker-end="url(#ar-n)"/>
+  <line class="arrow-new" x1="270" y1="395" x2="296" y2="395" marker-end="url(#ar-n)"/>
+  <line class="arrow-new" x1="400" y1="395" x2="426" y2="395" marker-end="url(#ar-n)"/>
+  <line class="arrow-new" x1="537" y1="384" x2="547" y2="384" marker-end="url(#ar-n)"/>
+  <line class="arrow-new" x1="639" y1="384" x2="649" y2="384" marker-end="url(#ar-n)"/>
+  <line class="arrow-new" x1="741" y1="384" x2="751" y2="384" marker-end="url(#ar-n)"/>
+  <line class="arrow-new" x1="860" y1="395" x2="876" y2="395" marker-end="url(#ar-n)"/>
+</svg>

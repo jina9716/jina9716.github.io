@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 460" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
+  <style>
+    .box { fill: #fff; stroke: #333; stroke-width: 1.4; }
+    .legacy { fill: #f7f7f7; stroke: #b5b5b5; stroke-width: 1.2; stroke-dasharray: 5 3; }
+    .gateway { fill: #fff7e6; stroke: #d19a3a; stroke-width: 2; }
+    .pkg { fill: #fffaf0; stroke: #d99; stroke-width: 1; }
+    .domain { fill: #eef7f0; stroke: #3a8a55; stroke-width: 1.4; }
+    .group { fill: none; stroke: #3a8a55; stroke-width: 1.2; stroke-dasharray: 4 3; opacity: 0.7; }
+    .title { font-size: 14px; font-weight: 600; fill: #111; }
+    .heading { font-size: 13px; font-weight: 600; fill: #111; }
+    .label { font-size: 12px; fill: #222; }
+    .small { font-size: 11px; fill: #555; }
+    .muted { font-size: 11px; fill: #888; }
+    .arrow-legacy { stroke: #b5b5b5; stroke-width: 1.3; fill: none; stroke-dasharray: 5 3; }
+    .arrow-active { stroke: #3a8a55; stroke-width: 1.8; fill: none; }
+    .arrow-kafka { stroke: #8a6fd9; stroke-width: 1.8; fill: none; }
+    .arrow-normal { stroke: #444; stroke-width: 1.3; fill: none; }
+  </style>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#444"/>
+    </marker>
+    <marker id="arr-active" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3a8a55"/>
+    </marker>
+    <marker id="arr-legacy" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b5b5b5"/>
+    </marker>
+    <marker id="arr-kafka-end" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8a6fd9"/>
+    </marker>
+    <marker id="arr-kafka-start" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8a6fd9"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="430" y="28" text-anchor="middle">API Gateway — 엔드포인트 단위로 legacy → 도메인 서버 라우팅 전환</text>
+
+  <!-- Client -->
+  <rect class="box" x="30" y="200" width="110" height="60" rx="4"/>
+  <text class="heading" x="85" y="225" text-anchor="middle">Client</text>
+  <text class="small" x="85" y="243" text-anchor="middle">iOS / Android</text>
+
+  <path class="arrow-normal" d="M140,230 L230,230" marker-end="url(#arr)"/>
+
+  <!-- Gateway -->
+  <rect class="gateway" x="230" y="130" width="240" height="200" rx="8"/>
+  <text class="heading" x="350" y="156" text-anchor="middle">API Gateway (BFF)</text>
+  <text class="small" x="350" y="174" text-anchor="middle">ddocdoc-api-gateway-monorepo</text>
+
+  <rect class="pkg" x="250" y="190" width="90" height="30" rx="4"/>
+  <text class="small" x="295" y="210" text-anchor="middle">proxy</text>
+
+  <rect class="pkg" x="360" y="190" width="90" height="30" rx="4"/>
+  <text class="small" x="405" y="210" text-anchor="middle">fetch</text>
+
+  <rect class="pkg" x="250" y="230" width="200" height="30" rx="4"/>
+  <text class="small" x="350" y="250" text-anchor="middle">circuit-breaker</text>
+
+  <rect class="pkg" x="250" y="270" width="200" height="30" rx="4"/>
+  <text class="small" x="350" y="290" text-anchor="middle">auth · composer</text>
+
+  <text class="muted" x="350" y="320" text-anchor="middle">엔드포인트별 라우팅 규칙</text>
+
+  <!-- app-server (legacy) -->
+  <rect class="legacy" x="560" y="60" width="270" height="90" rx="6"/>
+  <text class="heading" x="695" y="86" text-anchor="middle" fill="#777">app-server (legacy)</text>
+  <text class="small" x="695" y="106" text-anchor="middle">Express 4 + TSOA + Mongoose</text>
+  <text class="small" x="695" y="124" text-anchor="middle" fill="#888">트래픽 점진적으로 감소 → 컷오프</text>
+
+  <!-- legacy arrow -->
+  <path class="arrow-legacy" d="M470,180 Q520,140 560,115" marker-end="url(#arr-legacy)"/>
+  <text class="muted" x="505" y="150">(감소)</text>
+
+  <!-- domain server group (10개 도메인) -->
+  <rect class="group" x="548" y="162" width="294" height="180" rx="10"/>
+  <text class="small" x="555" y="156" fill="#3a8a55" font-weight="600">도메인 서버 (10개)</text>
+
+  <!-- domain servers -->
+  <rect class="domain" x="560" y="170" width="130" height="52" rx="4"/>
+  <text class="label" x="625" y="193" text-anchor="middle">Reception</text>
+  <text class="small" x="625" y="210" text-anchor="middle">접수 / 예약</text>
+
+  <rect class="domain" x="700" y="170" width="130" height="52" rx="4"/>
+  <text class="label" x="765" y="193" text-anchor="middle">Hospital</text>
+  <text class="small" x="765" y="210" text-anchor="middle">병원</text>
+
+  <rect class="domain" x="560" y="232" width="130" height="52" rx="4"/>
+  <text class="label" x="625" y="255" text-anchor="middle">Search</text>
+  <text class="small" x="625" y="272" text-anchor="middle">검색</text>
+
+  <rect class="domain" x="700" y="232" width="130" height="52" rx="4"/>
+  <text class="label" x="765" y="255" text-anchor="middle">Notification</text>
+  <text class="small" x="765" y="272" text-anchor="middle">알림</text>
+
+  <rect class="domain" x="560" y="294" width="270" height="40" rx="4" fill="#f4fbf5"/>
+  <text class="small" x="695" y="319" text-anchor="middle">... + 6개 도메인 (User · Payment · ...)</text>
+
+  <!-- active arrows (Gateway → domain) -->
+  <path class="arrow-active" d="M470,215 L560,200" marker-end="url(#arr-active)"/>
+  <path class="arrow-active" d="M470,240 L560,255" marker-end="url(#arr-active)"/>
+  <text class="muted" x="505" y="200" fill="#3a8a55">(증가)</text>
+
+  <!-- Kafka -->
+  <rect class="box" x="230" y="370" width="240" height="46" rx="4" fill="#f6f3ff" stroke="#8a6fd9"/>
+  <text class="heading" x="350" y="392" text-anchor="middle">Kafka</text>
+  <text class="small" x="350" y="408" text-anchor="middle">비동기 이벤트 (알림 · 캐시 갱신)</text>
+
+  <!-- 도메인 그룹 ↔ Kafka 양방향 화살표 1개 -->
+  <path class="arrow-kafka" d="M548,310 C 510,340 490,380 470,390"
+        marker-start="url(#arr-kafka-start)" marker-end="url(#arr-kafka-end)"/>
+  <text class="small" x="476" y="340" fill="#8a6fd9">pub/sub</text>
+
+  <!-- legend -->
+  <g transform="translate(30,425)">
+    <line class="arrow-legacy" x1="0" y1="8" x2="40" y2="8"/>
+    <text class="small" x="50" y="12">legacy 경로 (감소)</text>
+    <line class="arrow-active" x1="190" y1="8" x2="230" y2="8"/>
+    <text class="small" x="240" y="12">도메인 서버 라우팅 (증가)</text>
+    <line class="arrow-kafka" x1="400" y1="8" x2="440" y2="8"
+          marker-start="url(#arr-kafka-start)" marker-end="url(#arr-kafka-end)"/>
+    <text class="small" x="450" y="12">Kafka Pub/Sub</text>
+    <line class="arrow-normal" x1="580" y1="8" x2="620" y2="8"/>
+    <text class="small" x="630" y="12">클라이언트 → Gateway</text>
+  </g>
+</svg>

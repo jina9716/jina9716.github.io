@@ -1,0 +1,14 @@
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+Gemfile.lock
+*.gem
+.bundle/
+vendor/
+.DS_Store
+.claude
+.omc
+.idea/
+scripts/
+CLAUDE.md

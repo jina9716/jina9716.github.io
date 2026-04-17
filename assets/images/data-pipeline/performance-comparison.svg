@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 460" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
+  <style>
+    .title { font-size: 15px; font-weight: 700; fill: #111; }
+    .group-label { font-size: 13px; font-weight: 600; fill: #222; }
+    .bar-legacy { fill: #b5b5b5; }
+    .bar-new { fill: #2891c4; }
+    .bar-label-legacy { font-size: 11.5px; font-weight: 600; fill: #555; }
+    .bar-label-new { font-size: 11.5px; font-weight: 600; fill: #2891c4; }
+    .legend-label { font-size: 12px; fill: #333; }
+    .improvement { font-size: 13px; font-weight: 700; fill: #d97706; }
+    .axis { stroke: #ccc; stroke-width: 1; }
+    .small { font-size: 10.5px; fill: #777; }
+  </style>
+
+  <text class="title" x="410" y="35" text-anchor="middle">Redshift vs Snowflake — 처리 시간 비교</text>
+
+  <!-- Legend -->
+  <rect class="bar-legacy" x="540" y="55" width="14" height="14" rx="2"/>
+  <text class="legend-label" x="560" y="67">Redshift</text>
+  <rect class="bar-new" x="640" y="55" width="14" height="14" rx="2"/>
+  <text class="legend-label" x="660" y="67">Snowflake (X-Small)</text>
+
+  <!-- Bar Group 1: 2년치 진료 내역 조회 -->
+  <text class="group-label" x="40" y="115">2년치 진료 내역 조회 쿼리</text>
+  <rect class="bar-legacy" x="40" y="125" width="540" height="26" rx="2"/>
+  <text class="bar-label-legacy" x="588" y="143">3분+</text>
+  <rect class="bar-new" x="40" y="158" width="248" height="26" rx="2"/>
+  <text class="bar-label-new" x="296" y="176">1분 23초</text>
+  <text class="improvement" x="700" y="158">2.17배 ↑</text>
+
+  <!-- Bar Group 2: 일/월간 집계 -->
+  <text class="group-label" x="40" y="225">일/월간 집계 통계 쿼리</text>
+  <rect class="bar-legacy" x="40" y="235" width="540" height="26" rx="2"/>
+  <text class="bar-label-legacy" x="588" y="253">1분+</text>
+  <rect class="bar-new" x="40" y="268" width="36" height="26" rx="2"/>
+  <text class="bar-label-new" x="84" y="286">4초</text>
+  <text class="improvement" x="700" y="268">15배 ↑</text>
+
+  <!-- Bar Group 3: 적재 배치 -->
+  <text class="group-label" x="40" y="335">적재 배치 (4개 테이블 SP)</text>
+  <rect class="bar-legacy" x="40" y="345" width="540" height="26" rx="2"/>
+  <text class="bar-label-legacy" x="588" y="363">27분 (Glue)</text>
+  <rect class="bar-new" x="40" y="378" width="160" height="26" rx="2"/>
+  <text class="bar-label-new" x="208" y="396">8분 (Task)</text>
+  <text class="improvement" x="700" y="378">3.4배 ↑</text>
+
+  <!-- 부연 -->
+  <text class="small" x="40" y="438">* X-Small Warehouse 기준. Snowflake Task는 Warehouse queue로 동시 실행 제약 없이 순차 실행됨.</text>
+</svg>
