@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Redshift에서 Snowflake까지 — 데이터 파이프라인 구축기"
+title: "Redshift에서 Snowflake까지 - 데이터 파이프라인 구축기"
 subtitle: "NestJS Consumer + Glue를 걷어낸 CDC 파이프라인 전환 기록"
 date: 2026-01-17
 category: blog
@@ -13,9 +13,9 @@ tags: [Kafka, Snowflake, DataPipeline, MongoDB, CDC]
 
 유관부서가 서비스 데이터에 접근하는 방식 자체가 문제였다.
 
-- 운영 DB 직접 조회 — MongoDB에 그대로 쿼리를 날려 운영 DB에 부하가 갔다
-- 수동 추출 — 시간이 많이 들고 휴먼 에러가 잦았다
-- 분석 환경 부재 — 무거운 분석 쿼리를 돌릴 전용 환경이 없었다
+- 운영 DB 직접 조회 - MongoDB에 그대로 쿼리를 날려 운영 DB에 부하가 갔다
+- 수동 추출 - 시간이 많이 들고 휴먼 에러가 잦았다
+- 분석 환경 부재 - 무거운 분석 쿼리를 돌릴 전용 환경이 없었다
 
 운영에 영향을 주지 않으면서 자유롭게 데이터를 다룰 수 있는 별도의 분석 환경이 필요했다.
 
@@ -81,13 +81,13 @@ MongoDB Change Stream으로 변경 이벤트를 Kafka 토픽에 발행한다.
 
 핵심 설정은 다음과 같다.
 
-- `change.stream.full.document: updateLookup` — update 이벤트 시 변경된 문서 전체를 포함
-- `startup.mode: copy_existing` — 커넥터 최초 실행 시 기존 데이터를 모두 복제 (`latest`로 두면 이후 변경분만 캡처)
-- `pipeline` — `__v` 같은 불필요한 필드 제외
+- `change.stream.full.document: updateLookup` - update 이벤트 시 변경된 문서 전체를 포함
+- `startup.mode: copy_existing` - 커넥터 최초 실행 시 기존 데이터를 모두 복제 (`latest`로 두면 이후 변경분만 캡처)
+- `pipeline` - `__v` 같은 불필요한 필드 제외
 
 토픽 컨벤션은 `{prefix}.{database}.{collection}`, Replication Factor 3, 7일 보관으로 잡았다.
 
-### S3 Sink Connector — 레거시 Consumer 대체
+### S3 Sink Connector - 레거시 Consumer 대체
 
 이전에는 NestJS Consumer가 Kafka 메시지를 받아 AuroraDB에 적재했지만, 이제 S3 Sink Connector가 곧장 S3에 떨군다.
 
@@ -111,11 +111,11 @@ JSON + gzip 포맷은 Snowflake External Table에서 직접 읽기에 적합하�
 
 ### Snowflake CDC: External Table → Stream → Task → Table
 
-<img src="/assets/images/data-pipeline/cdc-flow.svg" alt="Snowflake CDC ETL 4단계 흐름 — External Table, Stream, Task, Target Table" />
+<img src="/assets/images/data-pipeline/cdc-flow.svg" alt="Snowflake CDC ETL 4단계 흐름 - External Table, Stream, Task, Target Table" />
 
 Snowflake에서는 SQL만으로 CDC ETL을 구성할 수 있다. 4단계로 풀어 보면 이렇다.
 
-**1단계 — External Table: S3 데이터를 Snowflake에서 직접 참조**
+**1단계 - External Table: S3 데이터를 Snowflake에서 직접 참조**
 
 ```sql
 CREATE OR REPLACE EXTERNAL TABLE external_table.example_collection(
@@ -138,7 +138,7 @@ FILE_FORMAT = (TYPE = json COMPRESSION = gzip REPLACE_INVALID_CHARACTERS = true)
 
 S3의 JSON 파일을 데이터 이동 없이 Snowflake에서 테이블처럼 조회할 수 있다. `cluster_time`을 파싱해두면 이후 MERGE 단계에서 중복 제거 키로 쓴다.
 
-**2단계 — Stream: 변경 감지**
+**2단계 - Stream: 변경 감지**
 
 ```sql
 CREATE OR REPLACE STREAM example_collection_stream
@@ -148,7 +148,7 @@ CREATE OR REPLACE STREAM example_collection_stream
 
 Stream은 External Table에 새로 추가된 행을 자동 추적한다. External Table은 append-only이기 때문에 `INSERT_ONLY = true`를 쓴다.
 
-**3단계 — Target Table 생성**
+**3단계 - Target Table 생성**
 
 ```sql
 CREATE TABLE public.example_collection (
@@ -163,7 +163,7 @@ CREATE TABLE public.example_collection (
 
 모든 컬럼에 COMMENT를 다는 걸 컨벤션으로 잡았다. 유관부서가 별도 문서 없이도 테이블 구조를 이해할 수 있게 하기 위해서다. PII(이름, 생년월일, 전화번호, 이메일)에는 마스킹 정책을 걸었다.
 
-**4단계 — Task: 스케줄 기반 MERGE 실행**
+**4단계 - Task: 스케줄 기반 MERGE 실행**
 
 ```sql
 CREATE OR REPLACE TASK example_collection_cdc
@@ -229,11 +229,11 @@ AS
 
 파이프라인을 깔고 나서는 Snowflake 기능을 같이 붙여가며 분석 환경을 채웠다.
 
-### Dynamic Table — 자동 갱신되는 파생 테이블
+### Dynamic Table - 자동 갱신되는 파생 테이블
 
 기본 테이블에 의존하는 파생 테이블을 Dynamic Table로 잡으면 원본이 변할 때 자동으로 증분 처리된다. `TARGET_LAG = '5 minutes'` 같은 식으로 갱신 주기를 선언만 하면 된다. 별도 통계 배치를 따로 짜고 스케줄을 관리할 필요가 없어진 게 컸다.
 
-### Flatten — 중첩 JSON 처리
+### Flatten - 중첩 JSON 처리
 
 MongoDB에서 넘어온 도큐먼트는 중첩 JSON이 많다. `LATERAL FLATTEN`으로 배열을 정규화된 행으로 풀어낼 수 있었다.
 
@@ -250,10 +250,10 @@ LATERAL FLATTEN(input => t.nested_data) f;
 
 서비스 특성상 시계열 분석이 잦았는데, 전용 함수가 도움이 됐다.
 
-- `TIME_SLICE` — 시계열을 분/시/일 단위로 버케팅
-- `DATE_TRUNC` — 타임스탬프를 원하는 단위로 절삭
-- `ASOF JOIN` — 시간 기반 퍼지 조인으로 서로 다른 데이터셋을 시간 근접으로 매칭
-- `RANGE BETWEEN` — 윈도우 함수에서 시간 범위 기반 집계
+- `TIME_SLICE` - 시계열을 분/시/일 단위로 버케팅
+- `DATE_TRUNC` - 타임스탬프를 원하는 단위로 절삭
+- `ASOF JOIN` - 시간 기반 퍼지 조인으로 서로 다른 데이터셋을 시간 근접으로 매칭
+- `RANGE BETWEEN` - 윈도우 함수에서 시간 범위 기반 집계
 
 Redshift에는 `ASOF JOIN`, `TIME_SLICE` 같은 함수가 없어서 일/월간 집계 쿼리를 직접 풀어 써야 했는데, 이쪽이 훨씬 단순해졌다.
 
@@ -261,7 +261,7 @@ Redshift에는 `ASOF JOIN`, `TIME_SLICE` 같은 함수가 없어서 일/월간 �
 
 ### 쿼리 성능과 적재 배치
 
-<img src="/assets/images/data-pipeline/performance-comparison.svg" alt="Redshift vs Snowflake 처리 시간 비교 — 진료 내역 조회 2.17배, 집계 통계 15배, 적재 배치 3.4배" />
+<img src="/assets/images/data-pipeline/performance-comparison.svg" alt="Redshift vs Snowflake 처리 시간 비교 - 진료 내역 조회 2.17배, 집계 통계 15배, 적재 배치 3.4배" />
 
 X-Small Warehouse만으로 대부분의 쿼리가 무리 없이 돌아갔다. 동일 배치(4개 테이블 업데이트 SP)가 Redshift에서 40초였는데 Snowflake에서는 5초였다. Glue는 Worker 수만큼만 동시 실행이 가능해서 시간대를 쪼개야 했지만, Snowflake Task는 Warehouse queue로 알아서 순차 실행됐다.
 
