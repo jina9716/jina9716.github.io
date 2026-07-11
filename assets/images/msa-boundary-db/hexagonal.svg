@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 430" font-family="-apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">
+  <rect x="0" y="0" width="880" height="430" fill="#ffffff"/>
+  <defs>
+    <marker id="arH" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- layered -->
+  <text x="170" y="40" text-anchor="middle" font-size="16" font-weight="700" fill="#334155">layered — 의존이 아래로</text>
+  <rect x="70" y="64" width="200" height="44" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="170" y="91" text-anchor="middle" font-size="12.5" fill="#334155">Presentation</text>
+  <line x1="170" y1="110" x2="170" y2="130" stroke="#64748b" stroke-width="1.5" marker-end="url(#arH)"/>
+  <rect x="70" y="134" width="200" height="44" rx="8" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="170" y="161" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1d4ed8">Domain</text>
+  <line x1="170" y1="180" x2="170" y2="200" stroke="#64748b" stroke-width="1.5" marker-end="url(#arH)"/>
+  <rect x="70" y="204" width="200" height="44" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="170" y="231" text-anchor="middle" font-size="12.5" fill="#334155">ORM (Mongoose)</text>
+  <line x1="170" y1="250" x2="170" y2="270" stroke="#64748b" stroke-width="1.5" marker-end="url(#arH)"/>
+  <path d="M 120 282 L 120 312 A 50 9 0 0 0 220 312 L 220 282" fill="#dbeafe" stroke="#3b82f6"/>
+  <ellipse cx="170" cy="282" rx="50" ry="9" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="170" y="308" text-anchor="middle" font-size="11.5" fill="#1d4ed8">DB</text>
+  <text x="170" y="356" text-anchor="middle" font-size="12" fill="#b45309">도메인이 인프라에 의존</text>
+  <text x="170" y="376" text-anchor="middle" font-size="12" fill="#64748b">저장 기술 교체·격리 테스트가 어렵다</text>
+
+  <!-- hexagonal -->
+  <text x="610" y="40" text-anchor="middle" font-size="16" font-weight="700" fill="#334155">hexagonal — 의존이 모두 안쪽으로</text>
+
+  <rect x="520" y="130" width="180" height="130" rx="14" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="610" y="172" text-anchor="middle" font-size="14" font-weight="700" fill="#1d4ed8">Domain</text>
+  <text x="610" y="194" text-anchor="middle" font-size="11.5" fill="#475569">port 인터페이스를 소유</text>
+  <text x="610" y="212" text-anchor="middle" font-size="11.5" fill="#475569">aggregate = 트랜잭션 경계</text>
+  <rect x="512" y="176" width="16" height="16" rx="3" fill="#2563eb"/>
+  <rect x="692" y="152" width="16" height="16" rx="3" fill="#2563eb"/>
+  <rect x="692" y="222" width="16" height="16" rx="3" fill="#2563eb"/>
+  <text x="500" y="120" font-size="10.5" fill="#2563eb">port</text>
+
+  <!-- driving -->
+  <rect x="380" y="118" width="112" height="38" rx="7" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="436" y="141" text-anchor="middle" font-size="11.5" fill="#334155">REST controller</text>
+  <rect x="380" y="228" width="112" height="38" rx="7" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="436" y="251" text-anchor="middle" font-size="11.5" fill="#334155">이벤트 컨슈머</text>
+  <line x1="496" y1="137" x2="512" y2="176" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arBlue)"/>
+  <line x1="496" y1="247" x2="512" y2="196" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arBlue)"/>
+  <text x="436" y="106" text-anchor="middle" font-size="11" fill="#64748b">driving (들어오는 쪽)</text>
+
+  <!-- driven -->
+  <rect x="736" y="118" width="124" height="38" rx="7" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="798" y="141" text-anchor="middle" font-size="11.5" fill="#334155">Mongoose repo</text>
+  <rect x="736" y="228" width="124" height="38" rx="7" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="798" y="251" text-anchor="middle" font-size="11.5" fill="#334155">Kafka producer</text>
+  <line x1="732" y1="140" x2="712" y2="156" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arBlue)"/>
+  <line x1="732" y1="245" x2="712" y2="233" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arBlue)"/>
+  <text x="798" y="106" text-anchor="middle" font-size="11" fill="#64748b">driven (나가는 쪽)</text>
+  <text x="610" y="300" text-anchor="middle" font-size="11" fill="#2563eb">어댑터가 port를 구현 — 의존 화살표가 모두 도메인을 향한다</text>
+
+  <text x="610" y="356" text-anchor="middle" font-size="12" fill="#047857">인프라는 어댑터 교체로 갈아끼움 · 도메인은 in-memory 어댑터로 격리 테스트</text>
+  <text x="610" y="376" text-anchor="middle" font-size="12" fill="#64748b">단, 도메인 로직이 얇은 CRUD 서비스엔 과설계</text>
+</svg>

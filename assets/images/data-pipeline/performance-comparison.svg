@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 460" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
+  <rect x="0" y="0" width="820" height="460" fill="#ffffff"/>
   <style>
     .title { font-size: 15px; font-weight: 700; fill: #111; }
     .group-label { font-size: 13px; font-weight: 600; fill: #222; }

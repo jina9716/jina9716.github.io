@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 350" font-family="-apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">
+  <rect x="0" y="0" width="900" height="350" fill="#ffffff"/>
+  <defs>
+    <marker id="arrow3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <line x1="40" y1="175" x2="866" y2="175" stroke="#64748b" stroke-width="2" marker-end="url(#arrow3)"/>
+
+  <!-- 1 Full Sync (above) -->
+  <circle cx="120" cy="175" r="7" fill="#3b82f6"/>
+  <line x1="120" y1="140" x2="120" y2="166" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="30" y="52" width="180" height="88" rx="10" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="120" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#1d4ed8">Full Sync</text>
+  <text x="120" y="104" text-anchor="middle" font-size="12" fill="#475569">스냅샷 전체 복사</text>
+  <text x="120" y="122" text-anchor="middle" font-size="12" fill="#475569">시작 시점 oplog ts 기록</text>
+
+  <!-- 2 Incremental Sync (below) -->
+  <circle cx="295" cy="175" r="7" fill="#3b82f6"/>
+  <line x1="295" y1="184" x2="295" y2="210" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="205" y="212" width="180" height="88" rx="10" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="295" y="240" text-anchor="middle" font-size="14" font-weight="700" fill="#1d4ed8">Incremental Sync</text>
+  <text x="295" y="264" text-anchor="middle" font-size="12" fill="#475569">oplog 적용 · checkpoint 보관</text>
+  <text x="295" y="282" text-anchor="middle" font-size="12" fill="#475569">replication lag 모니터링</text>
+
+  <!-- 3 검증 (above) -->
+  <circle cx="470" cy="175" r="7" fill="#10b981"/>
+  <line x1="470" y1="140" x2="470" y2="166" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="380" y="52" width="180" height="88" rx="10" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="470" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#047857">검증</text>
+  <text x="470" y="104" text-anchor="middle" font-size="12" fill="#475569">count 대조 → 샘플 대조</text>
+  <text x="470" y="122" text-anchor="middle" font-size="12" fill="#475569">→ 애플리케이션 테스트</text>
+
+  <!-- 4 컷오버 (below) -->
+  <circle cx="645" cy="175" r="7" fill="#10b981"/>
+  <line x1="645" y1="184" x2="645" y2="210" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="555" y="212" width="180" height="88" rx="10" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="645" y="240" text-anchor="middle" font-size="14" font-weight="700" fill="#047857">컷오버</text>
+  <text x="645" y="264" text-anchor="middle" font-size="12" fill="#475569">lag 0 수렴 확인</text>
+  <text x="645" y="282" text-anchor="middle" font-size="12" fill="#475569">도메인 묶음 단위 참조 전환</text>
+
+  <!-- 5 롤백 보전 (above) -->
+  <circle cx="800" cy="175" r="7" fill="#f59e0b"/>
+  <line x1="800" y1="140" x2="800" y2="166" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="710" y="52" width="180" height="88" rx="10" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="800" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#b45309">롤백 보전</text>
+  <text x="800" y="104" text-anchor="middle" font-size="12" fill="#475569">원본 일정 기간 유지</text>
+  <text x="800" y="122" text-anchor="middle" font-size="12" fill="#475569">문제 시 되돌릴 경로 확보</text>
+
+  <text x="450" y="332" text-anchor="middle" font-size="12.5" fill="#64748b">checkpoint 덕분에 프로세스가 재시작돼도 성공 지점부터 이어받는다</text>
+</svg>

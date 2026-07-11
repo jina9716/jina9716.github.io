@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" font-family="-apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">
+  <rect x="0" y="0" width="900" height="560" fill="#ffffff"/>
+  <defs>
+    <marker id="arO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <!-- dual-write -->
+  <text x="24" y="36" font-size="15" font-weight="700" fill="#b91c1c">dual-write — 원자성이 없는 두 쓰기</text>
+  <rect x="24" y="54" width="110" height="40" rx="8" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="79" y="79" text-anchor="middle" font-size="12" fill="#334155">서비스</text>
+  <path d="M 210 60 L 210 86 A 35 8 0 0 0 280 86 L 280 60" fill="#dbeafe" stroke="#3b82f6"/>
+  <ellipse cx="245" cy="60" rx="35" ry="8" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="245" y="82" text-anchor="middle" font-size="11" fill="#1d4ed8">DB</text>
+  <line x1="138" y1="66" x2="200" y2="66" stroke="#64748b" stroke-width="1.5" marker-end="url(#arO)"/>
+  <text x="169" y="52" text-anchor="middle" font-size="10.5" fill="#475569">(1) 커밋 ✓</text>
+  <rect x="420" y="54" width="110" height="40" rx="8" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="475" y="79" text-anchor="middle" font-size="12" fill="#334155">broker</text>
+  <line x1="138" y1="102" x2="414" y2="102" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arRed)"/>
+  <text x="278" y="122" text-anchor="middle" font-size="10.5" fill="#b91c1c">(2) 발행 — 직전에 프로세스가 죽으면 이벤트 유실</text>
+  <text x="580" y="66" font-size="12" fill="#475569">broker는 DB 트랜잭션에 참여하지 않는다</text>
+  <text x="580" y="86" font-size="12" fill="#475569">→ 두 쓰기를 하나로 묶을 방법이 없음</text>
+
+  <!-- outbox -->
+  <text x="24" y="166" font-size="15" font-weight="700" fill="#047857">transactional outbox — 한 트랜잭션으로 기록, 발행은 relay가</text>
+  <rect x="24" y="186" width="110" height="40" rx="8" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="79" y="211" text-anchor="middle" font-size="12" fill="#334155">서비스</text>
+  <rect x="180" y="180" width="230" height="120" rx="10" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="295" y="204" text-anchor="middle" font-size="11.5" font-weight="700" fill="#047857">같은 로컬 트랜잭션</text>
+  <rect x="200" y="216" width="190" height="30" rx="6" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="295" y="236" text-anchor="middle" font-size="11" fill="#334155">비즈니스 컬렉션 update</text>
+  <rect x="200" y="254" width="190" height="30" rx="6" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="295" y="274" text-anchor="middle" font-size="11" fill="#334155">outbox 컬렉션 insert</text>
+  <line x1="138" y1="206" x2="174" y2="206" stroke="#64748b" stroke-width="1.5" marker-end="url(#arO)"/>
+
+  <rect x="470" y="210" width="110" height="46" rx="8" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="525" y="230" text-anchor="middle" font-size="12" fill="#334155">relay</text>
+  <text x="525" y="246" text-anchor="middle" font-size="10" fill="#64748b">polling / CDC</text>
+  <line x1="414" y1="233" x2="464" y2="233" stroke="#64748b" stroke-width="1.5" marker-end="url(#arO)"/>
+
+  <rect x="640" y="210" width="100" height="46" rx="8" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="690" y="238" text-anchor="middle" font-size="12" fill="#334155">broker</text>
+  <line x1="584" y1="233" x2="634" y2="233" stroke="#64748b" stroke-width="1.5" marker-end="url(#arO)"/>
+  <text x="609" y="225" text-anchor="middle" font-size="10" fill="#475569">재발행 가능</text>
+
+  <rect x="780" y="200" width="100" height="66" rx="8" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="830" y="224" text-anchor="middle" font-size="12" fill="#334155">소비자</text>
+  <text x="830" y="242" text-anchor="middle" font-size="10" fill="#64748b">이벤트 키로 dedup</text>
+  <text x="830" y="256" text-anchor="middle" font-size="10" fill="#64748b">(멱등 처리)</text>
+  <line x1="744" y1="233" x2="774" y2="233" stroke="#64748b" stroke-width="1.5" marker-end="url(#arO)"/>
+  <text x="470" y="322" font-size="11.5" fill="#475569">전달 보장은 at-least-once → 소비자 멱등성이 전제 조건</text>
+
+  <!-- saga -->
+  <text x="24" y="392" font-size="15" font-weight="700" fill="#334155">saga — 로컬 트랜잭션의 연쇄와 보상</text>
+  <rect x="24" y="412" width="150" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="99" y="439" text-anchor="middle" font-size="12" fill="#334155">예약 생성 (PENDING)</text>
+  <rect x="240" y="412" width="130" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="305" y="439" text-anchor="middle" font-size="12" fill="#334155">결제 승인</text>
+  <rect x="436" y="412" width="150" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="511" y="439" text-anchor="middle" font-size="12" fill="#334155">예약 확정 (CONFIRMED)</text>
+  <rect x="652" y="412" width="130" height="44" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="717" y="439" text-anchor="middle" font-size="12" fill="#334155">알림 발송</text>
+  <line x1="178" y1="434" x2="234" y2="434" stroke="#64748b" stroke-width="1.5" marker-end="url(#arO)"/>
+  <line x1="374" y1="434" x2="430" y2="434" stroke="#64748b" stroke-width="1.5" marker-end="url(#arO)"/>
+  <line x1="590" y1="434" x2="646" y2="434" stroke="#64748b" stroke-width="1.5" marker-end="url(#arO)"/>
+
+  <path d="M 305 460 L 305 496 L 105 496 L 105 462" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arRed)"/>
+  <text x="205" y="514" text-anchor="middle" font-size="11.5" fill="#b91c1c">결제 실패 → 보상: 예약 취소 (rollback이 아니라 새로운 사실)</text>
+
+  <line x1="619" y1="404" x2="619" y2="466" stroke="#f59e0b" stroke-width="2" stroke-dasharray="2 4"/>
+  <text x="619" y="392" text-anchor="middle" font-size="11" fill="#b45309">pivot</text>
+  <text x="717" y="486" text-anchor="middle" font-size="11" fill="#b45309">이후는 보상 불가 → forward recovery</text>
+  <text x="717" y="502" text-anchor="middle" font-size="11" fill="#64748b">(성공할 때까지 재시도)</text>
+</svg>

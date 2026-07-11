@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
+  <rect x="0" y="0" width="960" height="520" fill="#ffffff"/>
   <style>
     .box { fill: #fff; stroke: #333; stroke-width: 1.4; }
     .legacy { fill: #f7f7f7; stroke: #b5b5b5; stroke-width: 1.2; }

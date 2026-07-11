@@ -24,6 +24,9 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - README.md
+  - CLAUDE.md
+  - msa-research-notes.md
+  - msa-tech-talk-guide.md
 
 defaults:
   - scope:
