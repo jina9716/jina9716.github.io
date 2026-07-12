@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MSA 기술 공유 — 경계·통신·데이터·DB 분리</title>
+<style>
+  :root{
+    --ink:#10151B; --surface:#1B232C; --surface2:#212B36; --line:#2E3A46;
+    --text:#E9EEF3; --muted:#93A2B0; --faint:#5E6E7C;
+    --accent:#F2B84B; --accent-dim:#8A6B2E;
+    --blue:#7FB4E6; --green:#6FBF8F; --red:#E36A5C;
+    --mono:"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{font-size:calc(0.62vw + 0.62vh)}
+  body{
+    font-family:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+    background:var(--ink); color:var(--text); overflow:hidden; height:100vh;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  .deck{position:relative; width:100vw; height:100vh}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    padding:4.2rem 5.5rem 5rem;
+  }
+  .slide.active{display:flex}
+  .eyebrow{
+    font-family:var(--mono); font-size:1.05rem; letter-spacing:.18em;
+    color:var(--accent); text-transform:uppercase; margin-bottom:1.2rem;
+  }
+  .eyebrow .sub{color:var(--faint); letter-spacing:.08em; margin-left:1em}
+  h1{font-size:4.6rem; line-height:1.22; font-weight:800; text-wrap:balance; letter-spacing:-.01em}
+  h2{font-size:3.3rem; line-height:1.28; font-weight:800; text-wrap:balance; letter-spacing:-.01em; margin-bottom:2.6rem}
+  .body{flex:1; display:flex; gap:4rem; align-items:center; min-height:0}
+  .col-l{flex:1.05; min-width:0}
+  .col-r{flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center}
+  .bullets{list-style:none; display:flex; flex-direction:column; gap:1.6rem}
+  .bullets li{
+    font-size:1.75rem; padding-left:1.6rem; position:relative; color:var(--text);
+  }
+  .bullets li::before{
+    content:""; position:absolute; left:0; top:.72em; width:.55rem; height:.55rem;
+    background:var(--accent); border-radius:1px;
+  }
+  .bullets li strong{color:var(--accent); font-weight:700}
+  .bullets li .m{font-family:var(--mono); font-size:.92em; color:var(--blue)}
+  .m{font-family:var(--mono)}
+  /* nodes & diagrams */
+  .diagram{display:flex; flex-direction:column; gap:1.2rem}
+  .drow{display:flex; align-items:center; gap:1rem; flex-wrap:nowrap}
+  .node{
+    background:var(--surface); border:1px solid var(--line); border-radius:.5rem;
+    padding:1rem 1.4rem; font-size:1.35rem; text-align:center; line-height:1.35;
+  }
+  .node small{display:block; color:var(--muted); font-size:1.05rem; margin-top:.2rem}
+  .node.hi{border-color:var(--accent); background:#241F14; color:var(--accent)}
+  .node.bad{border-color:var(--red); color:var(--red)}
+  .node.ok{border-color:var(--green); color:var(--green)}
+  .node.blue{border-color:var(--blue); color:var(--blue)}
+  .grow{flex:1}
+  .arrow{color:var(--faint); font-size:1.6rem; flex:none}
+  .arrow.a{color:var(--accent)} .arrow.r{color:var(--red)} .arrow.g{color:var(--green)}
+  .dlabel{font-family:var(--mono); font-size:1.02rem; color:var(--muted); letter-spacing:.06em}
+  .caption{font-family:var(--mono); font-size:1.05rem; color:var(--faint); margin-top:1.6rem; letter-spacing:.04em}
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:.6rem;
+    padding:1.6rem 1.8rem;
+  }
+  .card h3{font-size:1.5rem; margin-bottom:.5rem; font-weight:700}
+  .card p{font-size:1.28rem; color:var(--muted)}
+  .card.hi{border-color:var(--accent)} .card.hi h3{color:var(--accent)}
+  .cards{display:flex; flex-direction:column; gap:1.3rem}
+  .cards.h{flex-direction:row} .cards.h .card{flex:1}
+  table.tbl{border-collapse:collapse; width:100%; font-size:1.4rem}
+  .tbl th,.tbl td{border:1px solid var(--line); padding:1rem 1.3rem; text-align:left}
+  .tbl th{background:var(--surface2); font-family:var(--mono); font-size:1.1rem; letter-spacing:.08em; color:var(--muted); font-weight:600}
+  .tbl td.acc{color:var(--accent); font-weight:700}
+  .tbl td.mut{color:var(--muted)}
+  svg text{font-family:var(--mono)}
+  .stat{display:flex; align-items:baseline; gap:1.4rem; border-bottom:1px solid var(--line); padding:1.4rem .2rem}
+  .stat .n{font-family:var(--mono); font-size:3rem; font-weight:700; color:var(--accent); min-width:9rem; font-variant-numeric:tabular-nums}
+  .stat .t{font-size:1.5rem; color:var(--text)}
+  .stat .t small{display:block; color:var(--muted); font-size:1.15rem}
+  /* chrome */
+  .progress{position:fixed; top:0; left:0; height:.35rem; background:var(--accent); width:0; transition:width .25s; z-index:10}
+  .hud{
+    position:fixed; bottom:1.4rem; left:0; right:0; display:flex; justify-content:space-between;
+    padding:0 5.5rem; font-family:var(--mono); font-size:1.05rem; color:var(--faint); z-index:10;
+    letter-spacing:.08em;
+  }
+  .hud button{
+    background:none; border:1px solid var(--line); color:var(--muted); font-family:var(--mono);
+    font-size:1rem; padding:.3rem 1rem; border-radius:.4rem; cursor:pointer; letter-spacing:.08em;
+  }
+  .hud button:hover,.hud button:focus-visible{border-color:var(--accent); color:var(--accent); outline:none}
+  .notes{
+    position:fixed; left:0; right:0; bottom:0; background:#0B0F13ee; border-top:1px solid var(--accent-dim);
+    padding:1.6rem 5.5rem 2.6rem; font-size:1.45rem; color:var(--text); display:none; z-index:9;
+    max-height:38vh; overflow-y:auto; backdrop-filter:blur(4px); line-height:1.7;
+  }
+  .notes.show{display:block}
+  .notes .nl{font-family:var(--mono); font-size:1rem; color:var(--accent); letter-spacing:.15em; margin-bottom:.6rem}
+  /* presenter mode */
+  body.presenter .notes{display:block; max-height:46vh; font-size:1.9rem; border-top-width:2px}
+  body.presenter .deck{height:52vh}
+  body.presenter .slide{transform:scale(.94); transform-origin:top center}
+  .nextinfo{display:none; font-family:var(--mono); font-size:1.1rem; color:var(--blue); margin-top:1.2rem; letter-spacing:.06em}
+  body.presenter .nextinfo{display:block}
+  .pbadge{display:none; position:fixed; top:1rem; right:1.4rem; z-index:11; font-family:var(--mono);
+    font-size:1rem; letter-spacing:.12em; color:var(--ink); background:var(--accent); padding:.3rem 1rem; border-radius:.4rem}
+  body.presenter .pbadge{display:block}
+  .cover{justify-content:center}
+  .cover .axes{display:flex; gap:1.2rem; margin-top:3.4rem}
+  .cover .axes .node{padding:1.2rem 2rem; font-size:1.5rem}
+  .cover .who{margin-top:3.2rem; font-family:var(--mono); font-size:1.2rem; color:var(--muted); letter-spacing:.06em}
+  .agenda{display:flex; flex-direction:column; gap:1.5rem; max-width:78rem}
+  .agenda .row{display:flex; gap:2.2rem; align-items:baseline; border-bottom:1px solid var(--line); padding-bottom:1.5rem}
+  .agenda .no{font-family:var(--mono); color:var(--accent); font-size:1.5rem; min-width:6.5rem}
+  .agenda .q{font-size:2.1rem; font-weight:700}
+  .agenda .q small{display:block; font-size:1.3rem; color:var(--muted); font-weight:400; margin-top:.3rem}
+  .vs{display:flex; gap:1.6rem; align-items:stretch}
+  .vs>div{flex:1}
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:.6rem; padding:1.6rem}
+  .panel .ph{font-family:var(--mono); font-size:1.05rem; letter-spacing:.1em; color:var(--muted); margin-bottom:1.1rem}
+  .panel.bad{border-color:var(--red)} .panel.bad .ph{color:var(--red)}
+  .panel.ok{border-color:var(--green)} .panel.ok .ph{color:var(--green)}
+  .panel.acc{border-color:var(--accent)} .panel.acc .ph{color:var(--accent)}
+  .minirow{display:flex; gap:.7rem; align-items:center; margin-top:.7rem; font-size:1.25rem}
+  .chip{background:var(--surface2); border:1px solid var(--line); border-radius:.35rem; padding:.35rem .8rem; font-size:1.15rem}
+  .chip.a{border-color:var(--accent); color:var(--accent)}
+  .chip.b{border-color:var(--blue); color:var(--blue)}
+  .chip.r{border-color:var(--red); color:var(--red)}
+  .chip.g{border-color:var(--green); color:var(--green)}
+  .center{align-items:center; text-align:center}
+  @media (prefers-reduced-motion: reduce){ .progress{transition:none} }
+</style>
+
+<div class="progress" id="bar"></div>
+<div class="deck" id="deck">
+
+<!-- 1 -->
+<section class="slide cover">
+  <div class="eyebrow">MSA TECH SESSION</div>
+  <h1>MSA를 지탱하는 기술<br><span style="color:var(--accent)">경계 · 통신 · 데이터 · DB 분리</span></h1>
+  <div class="axes">
+    <div class="node">경계<small>어디서 자르나</small></div>
+    <div class="arrow">·</div>
+    <div class="node">통신<small>어떻게 주고받나</small></div>
+    <div class="arrow">·</div>
+    <div class="node">데이터<small>일관성은 어떻게</small></div>
+    <div class="arrow">·</div>
+    <div class="node hi">DB 분리<small>MongoShake 사례</small></div>
+  </div>
+  <div class="who">백엔드 개발자 대상 · 사례: MongoShake 기반 무중단 MongoDB 분리</div>
+  <div class="notes-src" hidden>안녕하세요. 오늘은 특정 프로젝트 이야기가 아니라 MSA를 지탱하는 기술 자체를 다루려고 합니다. 경계를 어떻게 나누는지, 서비스끼리 어떻게 통신하는지, 데이터 일관성을 어떻게 지키는지, 그리고 마지막에 제가 직접 진행했던 MongoShake 기반 DB 분리를 사례로 붙였습니다.</div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="eyebrow">AGENDA</div>
+  <h2>오늘의 네 가지 질문</h2>
+  <div class="body"><div class="agenda" style="flex:1">
+    <div class="row"><div class="no">PART 1</div><div class="q">경계 — 서비스를 어디서 자르는가<small>Bounded Context, 판정 기준, 경계의 크기</small></div></div>
+    <div class="row"><div class="no">PART 2</div><div class="q">통신 — 동기와 비동기를 어떻게 섞는가<small>가용성 결합, 방어 장치, at-least-once와 멱등성</small></div></div>
+    <div class="row"><div class="no">PART 3</div><div class="q">데이터 — 트랜잭션 없이 일관성을 어떻게 지키는가<small>Saga, Outbox, 조회 복제, 분산 락</small></div></div>
+    <div class="row"><div class="no">PART 4</div><div class="q">DB 분리 — 운영 중인 DB를 어떻게 무중단으로 나누는가<small>3단계 분리 + MongoShake 실전 사례</small></div></div>
+  </div></div>
+  <div class="notes-src" hidden>발표는 네 가지 질문에 답하는 구조입니다. 어디서 자르는가, 어떻게 주고받는가, 일관성을 어떻게 지키는가, 그리고 이미 운영 중인 DB를 어떻게 세우지 않고 나누는가. 마지막 질문은 제 실전 사례로 답하겠습니다.</div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="eyebrow">PART 1 · 경계<span class="sub">MSA 다시 정의하기</span></div>
+  <h2>MSA의 본질은 "독립 배포 가능한 단위"다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li>핵심 속성: <strong>독립 배포</strong>, 독립 장애 격리, 독립 스케일링</li>
+      <li>서버 개수·레포 개수는 본질이 아님</li>
+      <li>독립 배포가 안 되면 서버가 몇 개든 모놀리식</li>
+    </ul></div>
+    <div class="col-r">
+      <div class="vs">
+        <div class="panel bad">
+          <div class="ph">서버 N개 + 공유 DB = 분산 모놀리식</div>
+          <div class="drow"><div class="node grow">svc A</div><div class="node grow">svc B</div><div class="node grow">svc C</div></div>
+          <div class="drow" style="justify-content:center"><div class="arrow r">↘ ↓ ↙</div></div>
+          <div class="drow"><div class="node bad grow">공유 DB · 배포 협의 필요</div></div>
+        </div>
+        <div class="panel ok">
+          <div class="ph">독립 배포 단위</div>
+          <div class="drow"><div class="node grow">svc A</div><div class="node grow">svc B</div><div class="node grow">svc C</div></div>
+          <div class="drow"><div class="arrow g grow" style="text-align:center">↓</div><div class="arrow g grow" style="text-align:center">↓</div><div class="arrow g grow" style="text-align:center">↓</div></div>
+          <div class="drow"><div class="node ok grow">DB A</div><div class="node ok grow">DB B</div><div class="node ok grow">DB C</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="notes-src" hidden>MSA 정의부터 다시 잡고 시작하겠습니다. 서버를 몇 개로 쪼갰느냐는 본질이 아닙니다. 핵심은 독립 배포입니다. 한 서비스를 배포하는 데 다른 팀 협의가 필요하다면, 서버가 열 개라도 모놀리식과 다를 게 없습니다.</div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="eyebrow">PART 1 · 경계<span class="sub">안티패턴</span></div>
+  <h2>가장 흔한 실패는 분산 모놀리식이다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li>서버는 나눴지만 <strong>DB를 공유</strong>: 스키마 변경이 전 서비스에 전파</li>
+      <li><strong>동기 호출 체인</strong>: 한 서비스 장애가 연쇄 장애로</li>
+      <li><strong>배포 순서 의존</strong>: 릴리즈 트레인 부활</li>
+    </ul></div>
+    <div class="col-r"><div class="cards">
+      <div class="card"><h3><span class="m" style="color:var(--red)">01</span> 공유 DB</h3><p>스키마 = 암묵적 공용 API. 한 팀의 변경이 전 서비스로 전파</p></div>
+      <div class="card"><h3><span class="m" style="color:var(--red)">02</span> 동기 호출 체인</h3><p>A → B → C 체인 어디가 죽어도 전체 실패</p></div>
+      <div class="card"><h3><span class="m" style="color:var(--red)">03</span> 배포 순서 의존</h3><p>"B 먼저 배포하고 A 배포" — 독립 배포 상실</p></div>
+    </div></div>
+  </div>
+  <div class="notes-src" hidden>MSA 전환에서 가장 흔한 실패 형태가 분산 모놀리식입니다. 서버는 나눴는데 DB를 공유하거나, 동기 호출이 체인으로 엮여 있거나, 배포 순서가 정해져 있는 경우입니다. 겉모습만 MSA고 결합은 그대로인 상태죠. 오늘 다룰 기술들은 전부 이 결합을 끊는 도구입니다.</div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="eyebrow">PART 1 · 경계<span class="sub">Bounded Context</span></div>
+  <h2>경계의 기준은 기술 계층이 아니라 도메인이다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li>DDD의 <span class="m">Bounded Context</span> = 모델이 일관되게 통하는 범위</li>
+      <li>같은 단어도 컨텍스트마다 의미가 다름</li>
+      <li>자를 곳: <strong>모델의 의미가 바뀌는 지점</strong></li>
+    </ul></div>
+    <div class="col-r">
+      <div class="vs">
+        <div class="panel">
+          <div class="ph">접수 컨텍스트의 "예약"</div>
+          <div class="minirow"><span class="chip b">방문 시각</span><span class="chip b">대기 순번</span></div>
+          <div class="minirow"><span class="chip b">진료 항목</span><span class="chip b">환자 정보</span></div>
+        </div>
+        <div class="panel">
+          <div class="ph">결제 컨텍스트의 "예약"</div>
+          <div class="minirow"><span class="chip a">결제 수단</span><span class="chip a">청구 금액</span></div>
+          <div class="minirow"><span class="chip a">환불 규정</span><span class="chip a">정산 상태</span></div>
+        </div>
+      </div>
+      <div class="caption">같은 "예약" — 컨텍스트가 다르면 속성과 규칙이 다르다</div>
+    </div>
+  </div>
+  <div class="notes-src" hidden>경계를 어디서 자를 것인가. 답은 기술 계층이 아니라 도메인입니다. DDD의 Bounded Context 개념이 유용합니다. 같은 "예약"이라는 단어도 접수 컨텍스트와 결제 컨텍스트에서 필요한 속성과 규칙이 다릅니다. 모델의 의미가 바뀌는 그 지점이 서비스를 자를 지점입니다.</div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <div class="eyebrow">PART 1 · 경계<span class="sub">경계 판정 기준</span></div>
+  <h2>경계는 데이터 소유권과 변경 주체로 판정한다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li>이 데이터를 <strong>쓰기(write)하는 주체</strong>가 누구인가</li>
+      <li>이 로직이 바뀔 때 <strong>누가 바꾸는가</strong></li>
+      <li>함께 바뀌는 것끼리 묶고, 따로 바뀌는 것을 나눔 (변경의 응집)</li>
+    </ul></div>
+    <div class="col-r"><div class="diagram">
+      <div class="drow"><div class="node grow">Q1. 이 데이터의 write 주체는?</div></div>
+      <div class="drow" style="justify-content:center"><div class="arrow">↓</div></div>
+      <div class="drow"><div class="node grow">Q2. 이 로직의 변경 주체는?</div></div>
+      <div class="drow" style="justify-content:center"><div class="arrow">↓</div></div>
+      <div class="drow"><div class="node hi grow">같은 주체 → 같은 서비스로 응집</div></div>
+      <div class="caption">읽기는 여럿이어도, 쓰기 주인은 하나</div>
+    </div></div>
+  </div>
+  <div class="notes-src" hidden>이론은 Bounded Context인데, 실무에서 판정할 때 유용한 질문은 두 가지입니다. 이 데이터에 쓰기를 하는 주체가 누구인가, 이 로직이 바뀔 때 누가 바꾸는가. 함께 바뀌는 것끼리 묶는 게 원칙입니다. 읽기는 여러 서비스가 할 수 있어도 쓰기 주인은 하나여야 합니다.</div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="eyebrow">PART 1 · 경계<span class="sub">경계의 크기</span></div>
+  <h2>너무 잘게 자르면 분산 시스템 비용만 남는다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li>서비스 하나 추가 = 네트워크 경계·배포 파이프라인·모니터링 추가</li>
+      <li>마이크로가 목적이 아님: <strong>팀이 감당 가능한 단위</strong>가 상한</li>
+      <li>애매하면 크게 시작해서 나중에 자르는 편이 되돌리기 쉬움</li>
+    </ul></div>
+    <div class="col-r">
+      <svg viewBox="0 0 460 260" style="width:100%">
+        <line x1="50" y1="220" x2="430" y2="220" stroke="#2E3A46" stroke-width="1.5"/>
+        <line x1="50" y1="220" x2="50" y2="20" stroke="#2E3A46" stroke-width="1.5"/>
+        <path d="M50 200 C 180 190, 280 150, 420 40" fill="none" stroke="#E36A5C" stroke-width="3"/>
+        <path d="M50 190 C 180 175, 300 170, 420 160" fill="none" stroke="#6FBF8F" stroke-width="3"/>
+        <text x="240" y="245" fill="#93A2B0" font-size="13" text-anchor="middle">서비스 개수 →</text>
+        <text x="300" y="70" fill="#E36A5C" font-size="13">운영 비용 (파이프라인·모니터링·경계)</text>
+        <text x="300" y="150" fill="#6FBF8F" font-size="13">분리로 얻는 효용</text>
+      </svg>
+      <div class="caption">효용 곡선이 꺾이는 지점 너머는 비용만 는다</div>
+    </div>
+  </div>
+  <div class="notes-src" hidden>반대 방향의 함정도 있습니다. 너무 잘게 자르는 겁니다. 서비스가 하나 늘 때마다 네트워크 경계, 파이프라인, 모니터링 대상이 같이 늡니다. 합치는 것보다 자르는 게 쉽기 때문에, 애매하면 크게 시작해서 필요할 때 자르는 쪽이 안전합니다.</div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <div class="eyebrow">PART 2 · 통신<span class="sub">동기 호출</span></div>
+  <h2>동기 호출은 편리한 만큼 결합을 만든다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li><span class="m">REST/gRPC</span>: 구현 단순, 즉시 응답 필요할 때 적합</li>
+      <li>대가: <strong>가용성 결합</strong> — 상대가 죽으면 나도 실패</li>
+      <li>호출 체인이 길어질수록 전체 가용성은 곱셈으로 하락</li>
+    </ul></div>
+    <div class="col-r"><div class="diagram">
+      <div class="drow">
+        <div class="node grow">svc A<small class="m">99.9%</small></div>
+        <div class="arrow">→</div>
+        <div class="node grow">svc B<small class="m">99.9%</small></div>
+        <div class="arrow">→</div>
+        <div class="node grow">svc C<small class="m">99.9%</small></div>
+      </div>
+      <div class="drow" style="justify-content:center; margin-top:1rem">
+        <div class="node hi" style="font-family:var(--mono); font-size:1.6rem">0.999 × 0.999 × 0.999 ≈ 99.7%</div>
+      </div>
+      <div class="caption">체인 전체 가용성 = 각 구간 가용성의 곱</div>
+    </div></div>
+  </div>
+  <div class="notes-src" hidden>통신 파트입니다. 동기 호출, REST나 gRPC는 구현이 단순하고 즉시 응답이 필요한 조회에 적합합니다. 문제는 가용성 결합입니다. 상대 서비스가 죽으면 내 요청도 실패합니다. 가용성 99.9%짜리 서비스 세 개가 체인으로 엮이면 전체는 99.7%로 떨어집니다. 체인이 길수록 곱셈으로 나빠집니다.</div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <div class="eyebrow">PART 2 · 통신<span class="sub">Timeout · Retry · Circuit Breaker</span></div>
+  <h2>동기 호출에는 반드시 방어 장치를 붙인다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li><strong>Timeout</strong>: 무한 대기 차단, 스레드/커넥션 고갈 방지</li>
+      <li><strong>Retry</strong>: 멱등한 요청에만, 지수 백오프 + 지터</li>
+      <li><strong>Circuit Breaker</strong>: 연속 실패 시 차단하고 fallback으로 전환</li>
+    </ul></div>
+    <div class="col-r">
+      <svg viewBox="0 0 480 250" style="width:100%">
+        <rect x="20" y="95" width="120" height="56" rx="6" fill="#1B232C" stroke="#6FBF8F" stroke-width="1.5"/>
+        <text x="80" y="128" fill="#6FBF8F" font-size="15" text-anchor="middle">CLOSED</text>
+        <rect x="340" y="95" width="120" height="56" rx="6" fill="#241512" stroke="#E36A5C" stroke-width="1.5"/>
+        <text x="400" y="128" fill="#E36A5C" font-size="15" text-anchor="middle">OPEN</text>
+        <rect x="180" y="185" width="130" height="52" rx="6" fill="#241F14" stroke="#F2B84B" stroke-width="1.5"/>
+        <text x="245" y="216" fill="#F2B84B" font-size="14" text-anchor="middle">HALF-OPEN</text>
+        <path d="M140 110 H340" stroke="#E36A5C" stroke-width="2" marker-end="url(#ar)"/>
+        <text x="240" y="100" fill="#93A2B0" font-size="12" text-anchor="middle">연속 실패 임계 초과</text>
+        <path d="M395 151 C 380 195, 330 208, 312 210" stroke="#F2B84B" stroke-width="2" fill="none" marker-end="url(#aa)"/>
+        <text x="392" y="192" fill="#93A2B0" font-size="12">대기 시간 경과</text>
+        <path d="M178 208 C 110 200, 80 170, 78 153" stroke="#6FBF8F" stroke-width="2" fill="none" marker-end="url(#ag)"/>
+        <text x="88" y="196" fill="#93A2B0" font-size="12">시험 요청 성공</text>
+        <defs>
+          <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#E36A5C"/></marker>
+          <marker id="aa" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#F2B84B"/></marker>
+          <marker id="ag" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#6FBF8F"/></marker>
+        </defs>
+      </svg>
+      <div class="caption">Circuit Breaker 상태 전이</div>
+    </div>
+  </div>
+  <div class="notes-src" hidden>동기 호출을 쓴다면 방어 장치는 선택이 아닙니다. 타임아웃 없는 호출은 커넥션 고갈로 이어지고 재시도는 멱등한 요청에만 백오프를 걸어서 해야 합니다. 재시도 폭풍이 장애를 키우는 경우가 많습니다. 서킷 브레이커는 연속 실패 시 아예 차단해서 죽어가는 서비스에 부하를 더 얹지 않게 해줍니다.</div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <div class="eyebrow">PART 2 · 통신<span class="sub">이벤트 기반 통신</span></div>
+  <h2>비동기 이벤트는 시간적 결합을 끊는다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li>발행자는 수신자의 존재·상태를 몰라도 됨</li>
+      <li>수신자 장애 시에도 발행 성공 — <strong>메시지는 브로커에 적재</strong></li>
+      <li>대가: 결과적 일관성(eventual consistency), 흐름 추적 난이도 상승</li>
+    </ul></div>
+    <div class="col-r">
+      <div class="vs">
+        <div class="panel bad">
+          <div class="ph">동기 — 시간 결합</div>
+          <div class="drow"><div class="node grow">A</div><div class="arrow r">→</div><div class="node bad grow">B (down)</div></div>
+          <div class="caption" style="margin-top:1rem">B가 죽으면 A의 요청도 실패</div>
+        </div>
+        <div class="panel ok">
+          <div class="ph">비동기 — 시간 분리</div>
+          <div class="drow"><div class="node grow">A</div><div class="arrow g">→</div><div class="node blue grow">Broker</div><div class="arrow">⇢</div><div class="node grow">B</div></div>
+          <div class="caption" style="margin-top:1rem">B가 죽어도 발행 성공, 복구 후 소비</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="notes-src" hidden>비동기 이벤트는 시간적 결합을 끊습니다. 발행하는 쪽은 누가 받는지, 지금 받을 수 있는 상태인지 몰라도 됩니다. 수신자가 죽어 있어도 메시지는 브로커에 쌓였다가 복구 후 처리됩니다. 대신 데이터는 결과적으로만 일관되고 흐름 추적이 어려워지는 비용을 치릅니다.</div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <div class="eyebrow">PART 2 · 통신<span class="sub">메시지 전달 보장</span></div>
+  <h2>at-least-once가 현실적 기본값이라<br>멱등성이 필수다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li><span class="m">exactly-once</span>는 브로커·컨슈머·저장소 전 구간 보장이 어려움</li>
+      <li>현실적 선택: <strong class="m">at-least-once</strong> (유실 없음, 중복 허용)</li>
+      <li>컨슈머는 중복 소비를 전제로 멱등하게 설계</li>
+    </ul></div>
+    <div class="col-r">
+      <table class="tbl">
+        <tr><th>보장 수준</th><th>유실</th><th>중복</th><th>실무</th></tr>
+        <tr><td class="m">at-most-once</td><td style="color:var(--red)">있음</td><td class="mut">없음</td><td class="mut">유실 허용 로그 등</td></tr>
+        <tr><td class="m acc">at-least-once</td><td style="color:var(--green)">없음</td><td style="color:var(--accent)">있음</td><td class="acc">기본값 + 멱등 컨슈머</td></tr>
+        <tr><td class="m">exactly-once</td><td class="mut">없음</td><td class="mut">없음</td><td class="mut">전 구간 보장 어려움</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="notes-src" hidden>메시지 전달 보장 얘기를 안 할 수 없습니다. exactly-once는 브로커부터 저장소까지 전 구간에서 보장돼야 해서 현실적으로 얻기 어렵습니다. 실무 기본값은 at-least-once입니다. 유실은 없지만 중복이 옵니다. 그래서 컨슈머의 멱등 설계가 필수입니다. 이건 옵션이 아니라 전제 조건입니다.</div>
+</section>
+
+<!-- 12 -->
+<section class="slide">
+  <div class="eyebrow">PART 2 · 통신<span class="sub">멱등 컨슈머 패턴</span></div>
+  <h2>멱등성은 유니크 키·조건부 업데이트·<br>처리 이력으로 구현한다</h2>
+  <div class="body">
+    <div class="col-l" style="flex:1"><div class="cards h">
+      <div class="card"><h3>유니크 제약</h3><p>이벤트 ID·자연 키에 unique index → 중복 삽입을 DB 레벨에서 차단</p></div>
+      <div class="card"><h3>조건부 업데이트</h3><p>상태 기계 기반 — 유효한 전이만 허용<br><span class="m" style="font-size:1.05rem">PENDING→PAID (O)<br>PAID→PAID (skip)</span></p></div>
+      <div class="card"><h3>처리 이력</h3><p>처리한 이벤트 ID 기록 → 중복 도착 시 스킵</p></div>
+    </div></div>
+  </div>
+  <div style="font-size:1.6rem; color:var(--accent); margin-top:1rem">공통 목표 — "같은 메시지가 두 번 와도 결과가 같다"</div>
+  <div class="notes-src" hidden>멱등 구현은 크게 세 갈래입니다. 이벤트 ID에 유니크 제약을 걸어 중복 삽입을 DB 레벨에서 막거나, 상태 기계 기반으로 유효한 전이만 허용하는 조건부 업데이트를 쓰거나, 처리한 이벤트 ID를 기록해두고 중복이면 스킵하는 방식입니다. 어느 쪽이든 "같은 메시지가 두 번 와도 결과가 같다"를 보장하면 됩니다.</div>
+</section>
+
+<!-- 13 -->
+<section class="slide">
+  <div class="eyebrow">PART 2 · 통신<span class="sub">비동기 운영</span></div>
+  <h2>컨슈머 lag은 비동기 시스템의<br>핵심 관측 지표다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li><span class="m">lag</span> = 발행 속도와 소비 속도의 차이 누적</li>
+      <li>lag 증가 = 처리 지연이 <strong>사용자 경험으로 전파되는 전조</strong></li>
+      <li>파티션 설계·컨슈머 스케일링이 처리량의 상한 결정</li>
+    </ul></div>
+    <div class="col-r">
+      <svg viewBox="0 0 460 240" style="width:100%">
+        <line x1="45" y1="200" x2="440" y2="200" stroke="#2E3A46" stroke-width="1.5"/>
+        <line x1="45" y1="200" x2="45" y2="20" stroke="#2E3A46" stroke-width="1.5"/>
+        <line x1="45" y1="80" x2="440" y2="80" stroke="#E36A5C" stroke-width="1.5" stroke-dasharray="6 5"/>
+        <text x="435" y="70" fill="#E36A5C" font-size="12" text-anchor="end">alert threshold</text>
+        <path d="M45 190 L120 185 L180 175 L240 150 L300 110 L360 60 L430 30" fill="none" stroke="#F2B84B" stroke-width="3"/>
+        <circle cx="322" cy="95" r="5" fill="#E36A5C"/>
+        <text x="322" y="120" fill="#93A2B0" font-size="12" text-anchor="middle">임계 돌파 → 알람</text>
+        <text x="240" y="228" fill="#93A2B0" font-size="13" text-anchor="middle">시간 →</text>
+        <text x="30" y="110" fill="#93A2B0" font-size="13" transform="rotate(-90 30 110)">consumer lag</text>
+      </svg>
+    </div>
+  </div>
+  <div class="notes-src" hidden>비동기로 넘어가면 봐야 할 지표가 바뀝니다. 핵심은 컨슈머 lag입니다. 발행 속도를 소비가 못 따라가면 lag이 쌓이고 이게 곧 사용자에게 지연으로 도착합니다. lag 알람은 필수입니다. 처리량 상한은 결국 파티션 설계와 컨슈머 스케일링이 결정합니다.</div>
+</section>
+
+<!-- 14 -->
+<section class="slide">
+  <div class="eyebrow">PART 3 · 데이터<span class="sub">일관성 문제</span></div>
+  <h2>서비스를 나누는 순간<br>분산 트랜잭션 문제가 시작된다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li>한 비즈니스 동작이 <strong>여러 서비스의 쓰기</strong>를 요구</li>
+      <li><span class="m">2PC</span>(2단계 커밋): 가용성·성능 비용으로 실무에서 기피</li>
+      <li>대안: 로컬 트랜잭션의 연쇄 + 보상 = <strong>Saga</strong></li>
+    </ul></div>
+    <div class="col-r"><div class="diagram">
+      <div class="drow">
+        <div class="node ok grow">주문 생성<small>commit ✓</small></div>
+        <div class="arrow g">→</div>
+        <div class="node ok grow">결제 승인<small>commit ✓</small></div>
+        <div class="arrow r">→</div>
+        <div class="node bad grow">재고 차감<small>실패 ✗</small></div>
+      </div>
+      <div class="drow" style="justify-content:center; margin-top:.8rem"><div class="dlabel" style="color:var(--red)">이미 커밋된 주문·결제는? — 하나의 트랜잭션으로 묶을 수 없다</div></div>
+    </div></div>
+  </div>
+  <div class="notes-src" hidden>데이터 파트입니다. 모놀리식에서는 트랜잭션 하나로 끝나던 일이, 서비스를 나누면 여러 DB에 걸친 쓰기가 됩니다. 2단계 커밋은 이론상 가능하지만 코디네이터가 병목이자 단일 장애점이 돼서 실무에선 거의 안 씁니다. 현실적 대안이 로컬 트랜잭션을 연쇄하고 실패 시 보상하는 Saga입니다.</div>
+</section>
+
+<!-- 15 -->
+<section class="slide">
+  <div class="eyebrow">PART 3 · 데이터<span class="sub">Saga 패턴</span></div>
+  <h2>Saga는 롤백 대신<br>보상 트랜잭션으로 되돌린다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li>각 단계는 로컬 트랜잭션으로 커밋</li>
+      <li>중간 실패 시 이미 커밋된 단계를 <strong>보상 트랜잭션</strong>으로 취소</li>
+      <li><span class="m">Choreography</span>(이벤트 연쇄) vs <span class="m">Orchestration</span>(중앙 조정자)</li>
+    </ul></div>
+    <div class="col-r"><div class="diagram">
+      <div class="dlabel" style="color:var(--green)">FORWARD</div>
+      <div class="drow">
+        <div class="node ok grow">T1 주문</div><div class="arrow g">→</div>
+        <div class="node ok grow">T2 결제</div><div class="arrow r">→</div>
+        <div class="node bad grow">T3 재고 ✗</div>
+      </div>
+      <div class="dlabel" style="color:var(--accent); margin-top:.6rem">COMPENSATE (역순)</div>
+      <div class="drow">
+        <div class="node hi grow">C1 주문 취소</div><div class="arrow a">←</div>
+        <div class="node hi grow">C2 결제 취소</div><div class="arrow a">←</div>
+        <div class="node grow" style="opacity:.45">T3 실패 지점</div>
+      </div>
+    </div></div>
+  </div>
+  <div class="notes-src" hidden>Saga의 핵심은 롤백이 아니라 보상입니다. 각 단계는 각자 DB에 커밋하고 중간에 실패하면 이미 커밋된 단계들을 취소하는 보상 트랜잭션을 역순으로 실행합니다. 구현은 두 갈래입니다. 이벤트로 자율적으로 이어지는 Choreography와 중앙 조정자가 지휘하는 Orchestration이 있습니다. 단계가 3개를 넘어가면 흐름이 보이는 Orchestration이 관리하기 쉬웠습니다.</div>
+</section>
+
+<!-- 16 -->
+<section class="slide">
+  <div class="eyebrow">PART 3 · 데이터<span class="sub">Transactional Outbox</span></div>
+  <h2>"DB 커밋과 이벤트 발행"의 원자성은<br>Outbox로 푼다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li>문제: DB 커밋 성공 + 브로커 발행 실패 = <strong>유실</strong></li>
+      <li>해법: 이벤트를 같은 DB의 <span class="m">outbox</span> 테이블에 <strong>같은 트랜잭션</strong>으로 기록</li>
+      <li>별도 릴레이가 outbox를 읽어 브로커로 발행 (<span class="m">polling / CDC</span>)</li>
+    </ul></div>
+    <div class="col-r"><div class="diagram">
+      <div class="panel acc">
+        <div class="ph">하나의 로컬 트랜잭션</div>
+        <div class="drow"><div class="node grow">비즈니스 데이터 write</div><div class="arrow a">+</div><div class="node hi grow">outbox 테이블 insert</div></div>
+      </div>
+      <div class="drow" style="justify-content:center"><div class="arrow">↓</div></div>
+      <div class="drow">
+        <div class="node blue grow">Relay (polling / CDC)</div>
+        <div class="arrow">→</div>
+        <div class="node blue grow">Broker</div>
+        <div class="arrow">⇢</div>
+        <div class="node grow">멱등 컨슈머</div>
+      </div>
+      <div class="caption">발행이 at-least-once가 되므로 멱등 컨슈머와 세트</div>
+    </div></div>
+  </div>
+  <div class="notes-src" hidden>비동기 아키텍처의 고전적 함정 하나. DB에는 커밋됐는데 이벤트 발행이 실패하면 두 시스템이 어긋납니다. Outbox 패턴은 이벤트를 비즈니스 데이터와 같은 트랜잭션으로 outbox 테이블에 기록하고 별도 릴레이가 그걸 읽어 브로커에 발행합니다. 발행 자체가 at-least-once가 되니 앞서 말한 멱등 컨슈머와 세트로 갑니다.</div>
+</section>
+
+<!-- 17 -->
+<section class="slide">
+  <div class="eyebrow">PART 3 · 데이터<span class="sub">조회 전용 복제 / CQRS</span></div>
+  <h2>조회 결합은 데이터 복제로 끊는다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li>타 도메인 데이터가 필요한 조회: API 호출 vs 로컬 복제본</li>
+      <li>이벤트 구독으로 필요한 필드만 로컬에 유지 (<span class="m">read model</span>)</li>
+      <li><strong>쓰기 주인은 원 소유 도메인</strong>, 복제본은 읽기 전용</li>
+    </ul></div>
+    <div class="col-r">
+      <div class="vs">
+        <div class="panel">
+          <div class="ph">매번 API 호출</div>
+          <div class="drow"><div class="node grow">내 서비스</div><div class="arrow r">→</div><div class="node grow">타 도메인 API</div></div>
+          <div class="caption" style="margin-top:1rem">가용성 결합 + 레이턴시</div>
+        </div>
+        <div class="panel acc">
+          <div class="ph">이벤트 기반 복제</div>
+          <div class="drow"><div class="node grow">타 도메인</div><div class="arrow g">⇢</div><div class="node blue grow">이벤트</div><div class="arrow g">⇢</div><div class="node hi grow">read model</div></div>
+          <div class="caption" style="margin-top:1rem">읽기 전용 · 결과적 일관성 감수</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="notes-src" hidden>실무에서 자주 만나는 상황이, 내 화면에 다른 도메인 데이터가 필요한 경우입니다. 매번 API를 부르면 가용성 결합과 레이턴시가 생깁니다. 대안은 이벤트를 구독해서 필요한 필드만 내 DB에 읽기 전용으로 복제해 두는 겁니다. 쓰기 주인은 여전히 원 도메인이고 복제본은 결과적 일관성을 감수하는 read model입니다.</div>
+</section>
+
+<!-- 18 -->
+<section class="slide">
+  <div class="eyebrow">PART 3 · 데이터<span class="sub">동시성 제어</span></div>
+  <h2>분산 락은 최후의 수단 —<br>설계로 피하는 게 먼저다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li>우선순위: 유니크 제약 → 조건부 업데이트 → 분산 락</li>
+      <li><span class="m">Redlock</span> 등 분산 락: 락 만료·경합·시계 오차 등 고려 사항 많음</li>
+      <li>락을 쓰면 <strong>락 실패 시나리오까지 설계에 포함</strong></li>
+    </ul></div>
+    <div class="col-r"><div class="cards">
+      <div class="card"><h3><span class="m" style="color:var(--green)">1st</span> DB 유니크 제약</h3><p>가장 단순·견고. DB가 원자성을 보장</p></div>
+      <div class="card"><h3><span class="m" style="color:var(--blue)">2nd</span> 조건부 업데이트</h3><p>상태 조건을 걸어 원자적 전이만 허용</p></div>
+      <div class="card"><h3><span class="m" style="color:var(--red)">last</span> 분산 락 (Redlock 등)</h3><p>만료·경합·시계 오차 관리 필요 — 락 자체가 장애 지점이 될 수 있음</p></div>
+    </div></div>
+  </div>
+  <div class="notes-src" hidden>서비스가 나뉘면 동시성 제어도 분산 문제가 됩니다. 바로 분산 락으로 가기 전에, DB 유니크 제약이나 조건부 업데이트로 풀리는지 먼저 보는 걸 권합니다. Redlock 같은 분산 락은 만료 시간, 경합, 시계 오차까지 고려할 게 많고 락 획득 실패 시나리오를 설계 안 하면 락이 또 다른 장애 지점이 됩니다.</div>
+</section>
+
+<!-- 19 -->
+<section class="slide">
+  <div class="eyebrow">PART 4 · DB 분리<span class="sub">왜 마지막 관문인가</span></div>
+  <h2>DB를 나누지 않으면 MSA는 완성되지 않는다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li>공유 DB = <strong>스키마가 암묵적 공용 API</strong></li>
+      <li>인덱스·슬로우 쿼리·커넥션 풀을 전 서비스가 공유하는 성능 결합</li>
+      <li>서비스 분리의 마지막 관문이자 가장 되돌리기 어려운 작업</li>
+    </ul></div>
+    <div class="col-r"><div class="cards">
+      <div class="card"><h3>스키마 결합</h3><p>필드 하나 바꾸는 데 전 서비스 협의</p></div>
+      <div class="card"><h3>성능 결합</h3><p>한 서비스의 슬로우 쿼리가 전체 레이턴시로</p></div>
+      <div class="card"><h3>장애 결합</h3><p>커넥션 풀 고갈·장애가 전 서비스에 전파</p></div>
+    </div></div>
+  </div>
+  <div class="notes-src" hidden>마지막 파트, DB 분리입니다. 코드를 아무리 잘 나눠도 DB를 공유하면 스키마가 암묵적인 공용 API로 남습니다. 한 서비스의 슬로우 쿼리가 전 서비스 성능에 영향을 주고요. 그래서 DB 분리가 MSA의 마지막 관문입니다. 동시에 가장 되돌리기 어려운 작업이라 순서와 안전장치가 중요합니다.</div>
+</section>
+
+<!-- 20 -->
+<section class="slide">
+  <div class="eyebrow">PART 4 · DB 분리<span class="sub">분리 단계 설계</span></div>
+  <h2>DB 분리는 3단계 —<br>접근 분리, schema 분리, 물리 분리</h2>
+  <div class="body">
+    <div class="col-l" style="flex:1"><div class="cards h">
+      <div class="card hi"><h3><span class="m">STEP 1</span> 접근 분리</h3><p>타 도메인 직접 조회 제거,<br>소유 도메인 API 경유<br><br><span style="color:var(--green)">끊는 결합 — 접근 결합</span></p></div>
+      <div class="card hi"><h3><span class="m">STEP 2</span> schema 분리</h3><p>같은 클러스터 내<br>도메인별 DB(schema)로 이동<br><br><span style="color:var(--green)">끊는 결합 — 스키마 결합</span></p></div>
+      <div class="card"><h3><span class="m">STEP 3</span> 물리 분리</h3><p>클러스터 자체 분리<br>비용 대비 효과 따져 <strong>선택</strong><br><br><span style="color:var(--muted)">끊는 결합 — 성능·장애 결합</span></p></div>
+    </div></div>
+  </div>
+  <div style="font-size:1.5rem; color:var(--muted); margin-top:1.2rem">2단계까지만으로도 스키마 결합과 접근 결합은 끊긴다 — 3단계는 필수가 아니다</div>
+  <div class="notes-src" hidden>DB 분리를 한 방에 하려면 실패합니다. 3단계로 나누는 게 안전합니다. 먼저 코드 레벨에서 타 도메인 직접 조회를 없애고(접근 분리), 같은 클러스터 안에서 도메인별 DB로 나눈 뒤(schema 분리), 마지막으로 클러스터를 물리적으로 분리합니다. 각 단계가 끊는 결합이 다르고 물리 분리는 비용이 커서 반드시 해야 하는 건 아닙니다. 2단계까지만으로도 스키마 결합과 접근 결합은 끊깁니다.</div>
+</section>
+
+<!-- 21 -->
+<section class="slide">
+  <div class="eyebrow" style="color:var(--blue)">CASE STUDY<span class="sub">MongoShake 기반 DB 분리</span></div>
+  <h2>운영 중인 MongoDB를 무중단으로 나눈 사례</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li>상황: 한 DB(schema)에 여러 도메인 <span class="m">collection</span> 혼재</li>
+      <li>제약: 운영 트래픽 유지, <strong>다운타임 불가</strong></li>
+      <li>선택: <span class="m">MongoShake</span>로 실시간 동기화 후 컷오버</li>
+    </ul></div>
+    <div class="col-r">
+      <div class="vs">
+        <div class="panel bad">
+          <div class="ph">BEFORE — 혼재</div>
+          <div class="minirow"><span class="chip">접수 col.</span><span class="chip">예약 col.</span></div>
+          <div class="minirow"><span class="chip">병원 col.</span><span class="chip">결제 col.</span></div>
+          <div class="caption" style="margin-top:1rem">하나의 DB</div>
+        </div>
+        <div class="panel ok">
+          <div class="ph">AFTER — 도메인별 DB</div>
+          <div class="minirow"><span class="chip g">접수 DB</span><span class="chip g">예약 DB</span></div>
+          <div class="minirow"><span class="chip g">병원 DB</span><span class="chip g">결제 DB</span></div>
+          <div class="caption" style="margin-top:1rem">같은 클러스터 내 분리</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="notes-src" hidden>여기서부터는 제가 직접 진행한 사례입니다. 한 DB에 여러 도메인의 collection이 섞여 있었습니다. 이걸 도메인별 DB로 나눠야 했습니다. 제약은 명확했습니다. 서비스를 세울 수 없다. 그래서 실시간 동기화 도구인 MongoShake로 데이터를 복제해 두고 컷오버하는 방식을 택했습니다.</div>
+</section>
+
+<!-- 22 -->
+<section class="slide">
+  <div class="eyebrow" style="color:var(--blue)">CASE STUDY<span class="sub">도구 이해</span></div>
+  <h2>MongoShake는 oplog를 재생해<br>실시간 복제한다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li>Alibaba 오픈소스 MongoDB 복제 도구</li>
+      <li>원리: <span class="m">full sync</span>(초기 전체 복사) + <span class="m">incremental sync</span>(oplog tailing)</li>
+      <li><span class="m">checkpoint</span> 저장으로 중단 지점부터 재개 가능</li>
+    </ul></div>
+    <div class="col-r"><div class="diagram">
+      <div class="drow">
+        <div class="node grow">Source DB<small class="m">oplog</small></div>
+        <div class="arrow a">→</div>
+        <div class="node hi grow">MongoShake<small>full sync + oplog replay</small></div>
+        <div class="arrow a">→</div>
+        <div class="node grow">Target DB</div>
+      </div>
+      <div class="drow" style="justify-content:center; margin-top:.6rem">
+        <div class="node blue" style="font-size:1.15rem">checkpoint — 중단 시 그 지점부터 재개</div>
+      </div>
+      <div class="caption">① full sync: 기존 데이터 전체 복사 → ② incremental: oplog 지속 재생</div>
+    </div></div>
+  </div>
+  <div class="notes-src" hidden>MongoShake는 Alibaba가 공개한 MongoDB 복제 도구입니다. 동작 원리는 두 단계입니다. 먼저 기존 데이터를 통째로 복사하는 full sync, 그다음 source의 oplog를 계속 읽어 target에 재생하는 incremental sync입니다. checkpoint를 남기기 때문에 프로세스가 중단돼도 그 지점부터 재개할 수 있습니다.</div>
+</section>
+
+<!-- 23 -->
+<section class="slide">
+  <div class="eyebrow" style="color:var(--blue)">CASE STUDY<span class="sub">전환 설계</span></div>
+  <h2>컷오버는 lag이 0에 수렴해야 전환한다</h2>
+  <div class="body">
+    <div class="col-l"><ul class="bullets">
+      <li>① <span class="m">full sync</span> 완료 → ② <span class="m">incremental sync</span>로 lag 수렴 확인</li>
+      <li>③ 애플리케이션 커넥션을 신규 DB로 전환 (컷오버)</li>
+      <li>④ 이상 시 커넥션 원복 — <strong>롤백 경로 사전 확보</strong></li>
+    </ul></div>
+    <div class="col-r">
+      <svg viewBox="0 0 480 200" style="width:100%">
+        <line x1="20" y1="120" x2="465" y2="120" stroke="#2E3A46" stroke-width="2"/>
+        <circle cx="60" cy="120" r="6" fill="#7FB4E6"/>
+        <text x="60" y="150" fill="#7FB4E6" font-size="12" text-anchor="middle">full sync</text>
+        <circle cx="170" cy="120" r="6" fill="#7FB4E6"/>
+        <text x="170" y="150" fill="#7FB4E6" font-size="12" text-anchor="middle">incremental</text>
+        <circle cx="280" cy="120" r="6" fill="#6FBF8F"/>
+        <text x="280" y="150" fill="#6FBF8F" font-size="12" text-anchor="middle">lag ≈ 0 확인</text>
+        <circle cx="370" cy="120" r="8" fill="#F2B84B"/>
+        <text x="370" y="150" fill="#F2B84B" font-size="13" text-anchor="middle" font-weight="bold">컷오버</text>
+        <circle cx="440" cy="120" r="6" fill="#93A2B0"/>
+        <text x="440" y="150" fill="#93A2B0" font-size="12" text-anchor="middle">관찰</text>
+        <path d="M60 80 C 150 40, 240 40, 280 75" fill="none" stroke="#F2B84B" stroke-width="2.5"/>
+        <path d="M280 75 L280 112" stroke="#6FBF8F" stroke-width="2" stroke-dasharray="4 4"/>
+        <text x="165" y="35" fill="#93A2B0" font-size="12" text-anchor="middle">replication lag 수렴 곡선</text>
+        <path d="M370 95 C 400 60, 430 60, 445 80" fill="none" stroke="#E36A5C" stroke-width="1.8" stroke-dasharray="5 4"/>
+        <text x="418" y="52" fill="#E36A5C" font-size="12" text-anchor="middle">이상 시 커넥션 원복</text>
+      </svg>
+    </div>
+  </div>
+  <div class="notes-src" hidden>절차는 이렇습니다. full sync가 끝나면 incremental sync가 따라붙습니다. 여기서 replication lag이 0 근처로 수렴하는지 봅니다. 수렴을 확인한 뒤에 애플리케이션 커넥션을 신규 DB로 전환합니다. 중요한 건 롤백 경로입니다. 전환 후 이상이 보이면 커넥션을 원복하면 되도록, 되돌리는 절차를 먼저 정의하고 들어갔습니다.</div>
+</section>
+
+<!-- 24 -->
+<section class="slide">
+  <div class="eyebrow" style="color:var(--blue)">CASE STUDY<span class="sub">운영에서 챙긴 것</span></div>
+  <h2>실전 체크포인트 — 검증, 인덱스, 쓰기 시점</h2>
+  <div class="body">
+    <div class="col-l" style="flex:1">
+      <table class="tbl" style="font-size:1.5rem">
+        <tr><th style="width:24%">체크</th><th>내용</th><th style="width:34%">놓치면</th></tr>
+        <tr><td class="acc">정합성 검증</td><td>count 비교 + 샘플 문서 필드 대조</td><td class="mut">어긋난 데이터로 컷오버</td></tr>
+        <tr><td class="acc">인덱스</td><td>target 사전 생성 확인 (full sync 후 재확인)</td><td class="mut">컷오버 직후 슬로우 쿼리 폭탄</td></tr>
+        <tr><td class="acc">컷오버 타이밍</td><td>쓰기 트래픽 낮은 시간대 선택</td><td class="mut">전환 순간 리스크 확대</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="notes-src" hidden>실전에서 챙긴 포인트는 세 가지입니다. 우선 동기화가 됐다고 믿지 않고 검증했습니다. count 비교에 더해 샘플 문서의 필드 단위 대조까지 했고요. 인덱스도 중요합니다. 데이터만 옮겨지고 인덱스가 빠지면 컷오버 직후 슬로우 쿼리 폭탄을 맞습니다. 컷오버 시점은 쓰기 트래픽이 낮은 시간대를 골랐습니다. 전환 순간의 리스크를 최소화하기 위해서입니다.</div>
+</section>
+
+<!-- 25 -->
+<section class="slide">
+  <div class="eyebrow" style="color:var(--blue)">CASE STUDY<span class="sub">사례 결과</span></div>
+  <h2>다운타임 없이 도메인별 DB 분리를 완료했다</h2>
+  <div class="body">
+    <div class="col-l" style="flex:1; max-width:72rem">
+      <div class="stat"><div class="n">0</div><div class="t">서비스 중단<small>운영 트래픽 유지 상태에서 컷오버 완료</small></div></div>
+      <div class="stat"><div class="n">해소</div><div class="t">스키마 결합 · 접근 결합<small>도메인별 DB 확보</small></div></div>
+      <div class="stat"><div class="n">미사용</div><div class="t">커넥션 원복 롤백 경로<small>준비했으나 쓸 일 없었음 — 있다는 사실이 컷오버 결정을 가볍게 만든다</small></div></div>
+    </div>
+  </div>
+  <div class="notes-src" hidden>결과적으로 서비스 중단 없이 컷오버를 마쳤습니다. 도메인별 DB가 확보되면서 스키마 결합과 접근 결합이 끊겼고 준비해 뒀던 커넥션 원복은 쓸 일이 없었습니다. 롤백 경로는 안 쓰는 게 최선이지만 있다는 사실이 컷오버 결정을 가볍게 만들어 줍니다.</div>
+</section>
+
+<!-- 26 -->
+<section class="slide">
+  <div class="eyebrow">WRAP-UP<span class="sub">Key Takeaways</span></div>
+  <h2>정리 — 결합을 끊는 도구 상자</h2>
+  <div class="body">
+    <div class="col-l" style="flex:1"><div class="cards h">
+      <div class="card hi"><h3>경계</h3><p>쓰기 소유권과 변경 주체로 판정<br><br><span class="m" style="font-size:1.05rem">Bounded Context</span></p></div>
+      <div class="card hi"><h3>통신 · 데이터</h3><p>at-least-once + 멱등 컨슈머 + Outbox + Saga가 한 세트<br><br><span class="m" style="font-size:1.05rem">eventual consistency</span></p></div>
+      <div class="card hi"><h3>DB 분리</h3><p>접근 → schema → 물리 순서.<br>실시간 복제 + 컷오버로 무중단 가능<br><br><span class="m" style="font-size:1.05rem">MongoShake</span></p></div>
+    </div></div>
+  </div>
+  <div class="notes-src" hidden>정리하겠습니다. 오늘 다룬 건 전부 결합을 끊는 도구입니다. 경계는 쓰기 소유권으로 판정하고 비동기 세계에서는 at-least-once와 멱등 컨슈머, Outbox, Saga가 한 세트로 움직입니다. DB 분리는 접근 분리부터 순서대로 가면 되고 실시간 복제와 컷오버 설계만 갖추면 무중단으로 가능하다는 걸 사례로 보여드렸습니다.</div>
+</section>
+
+<!-- 27 -->
+<section class="slide cover center" style="justify-content:center">
+  <div class="eyebrow">MSA TECH SESSION</div>
+  <h1 style="font-size:6rem">감사합니다</h1>
+  <div class="notes-src" hidden>준비한 내용은 여기까지입니다. 들어주셔서 감사합니다.</div>
+</section>
+
+</div>
+
+<div class="pbadge">PRESENTER</div>
+<div class="notes" id="notes"><div class="nl">SPEAKER NOTES</div><div id="notesBody"></div><div class="nextinfo" id="nextInfo"></div></div>
+
+<div class="hud">
+  <span id="counter">1 / 27</span>
+  <span>← → 이동 · <button id="presBtn" type="button">P — 발표자 모드</button></span>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var bar = document.getElementById('bar');
+  var counter = document.getElementById('counter');
+  var notes = document.getElementById('notes');
+  var notesBody = document.getElementById('notesBody');
+  var nextInfo = document.getElementById('nextInfo');
+  var presBtn = document.getElementById('presBtn');
+  var i = 0, presenter = false;
+
+  // cross-window sync: audience window + presenter window stay on the same slide
+  var chan = null;
+  try { chan = new BroadcastChannel('msa-deck-sync'); } catch(e) {}
+  function broadcast(){
+    var msg = { i: i, t: Date.now() };
+    if (chan) { try { chan.postMessage(msg); } catch(e) {} }
+    try { localStorage.setItem('msa-deck-sync', JSON.stringify(msg)); } catch(e) {}
+  }
+  function onRemote(msg){
+    if (!msg || typeof msg.i !== 'number' || msg.i === i) return;
+    i = Math.max(0, Math.min(slides.length - 1, msg.i));
+    render();
+  }
+  if (chan) chan.onmessage = function(e){ onRemote(e.data); };
+  window.addEventListener('storage', function(e){
+    if (e.key !== 'msa-deck-sync' || !e.newValue) return;
+    try { onRemote(JSON.parse(e.newValue)); } catch(err) {}
+  });
+
+  function slideTitle(k){
+    var el = slides[k] && slides[k].querySelector('h1, h2');
+    return el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+  }
+  function render(){
+    slides.forEach(function(s, k){ s.classList.toggle('active', k === i); });
+    bar.style.width = ((i + 1) / slides.length * 100) + '%';
+    counter.textContent = (i + 1) + ' / ' + slides.length;
+    var src = slides[i].querySelector('.notes-src');
+    notesBody.textContent = src ? src.textContent.trim() : '';
+    nextInfo.textContent = (i + 1 < slides.length) ? 'NEXT ▸ ' + (i + 2) + '. ' + slideTitle(i + 1) : 'NEXT ▸ (마지막 슬라이드)';
+    document.body.classList.toggle('presenter', presenter);
+    notes.classList.toggle('show', presenter);
+    if (location.hash !== '#' + (i + 1)) history.replaceState(null, '', '#' + (i + 1));
+  }
+  function go(n){
+    var next = Math.max(0, Math.min(slides.length - 1, n));
+    if (next === i) return;
+    i = next; render(); broadcast();
+  }
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); go(i + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(i - 1); }
+    else if (e.key === 'Home') go(0);
+    else if (e.key === 'End') go(slides.length - 1);
+    else if (e.key === 'p' || e.key === 'P') { presenter = !presenter; render(); }
+  });
+  document.addEventListener('click', function(e){
+    if (notes.contains(e.target) || e.target.closest('.hud')) return;
+    go(e.clientX > window.innerWidth / 2 ? i + 1 : i - 1);
+  });
+  presBtn.addEventListener('click', function(e){ e.stopPropagation(); presenter = !presenter; render(); });
+
+  var h = parseInt(location.hash.slice(1), 10);
+  if (h >= 1 && h <= slides.length) i = h - 1;
+  render();
+})();
+</script>
