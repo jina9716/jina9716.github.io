@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" font-family="-apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">
+  <rect x="0" y="0" width="900" height="500" fill="#ffffff"/>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="34" text-anchor="middle" font-size="16" font-weight="700" fill="#334155">"event-driven"이 뭉뚱그리는 네 가지</text>
+
+  <!-- Q1: event notification -->
+  <rect x="24" y="56" width="416" height="200" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="86" font-size="14.5" font-weight="700" fill="#1d4ed8">① event notification</text>
+  <rect x="44" y="108" width="90" height="36" rx="7" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="89" y="131" text-anchor="middle" font-size="12" fill="#334155">Source</text>
+  <rect x="306" y="108" width="90" height="36" rx="7" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="351" y="131" text-anchor="middle" font-size="12" fill="#334155">Consumer</text>
+  <line x1="138" y1="120" x2="302" y2="120" stroke="#64748b" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="220" y="112" text-anchor="middle" font-size="11" fill="#475569">"바뀌었다" (얇은 이벤트)</text>
+  <line x1="302" y1="136" x2="138" y2="136" stroke="#d97706" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arAmber)"/>
+  <text x="220" y="152" text-anchor="middle" font-size="11" fill="#92400e">상세는 API 콜백</text>
+  <text x="44" y="192" font-size="12" fill="#475569">결합 최저 · 이벤트만으로 흐름 재구성 불가</text>
+  <text x="44" y="212" font-size="12" fill="#475569">콜백 트래픽이 소스로 돌아옴</text>
+
+  <!-- Q2: ECST -->
+  <rect x="460" y="56" width="416" height="200" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="480" y="86" font-size="14.5" font-weight="700" fill="#1d4ed8">② event-carried state transfer</text>
+  <rect x="480" y="108" width="90" height="36" rx="7" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="525" y="131" text-anchor="middle" font-size="12" fill="#334155">Source</text>
+  <rect x="742" y="108" width="90" height="36" rx="7" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="787" y="131" text-anchor="middle" font-size="12" fill="#334155">Consumer</text>
+  <line x1="574" y1="126" x2="738" y2="126" stroke="#64748b" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="656" y="118" text-anchor="middle" font-size="11" fill="#475569">이벤트에 상태 payload 포함</text>
+  <path d="M 762 156 L 762 184 A 25 6 0 0 0 812 184 L 812 156" fill="#dbeafe" stroke="#3b82f6"/>
+  <ellipse cx="787" cy="156" rx="25" ry="6" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="787" y="176" text-anchor="middle" font-size="10.5" fill="#1d4ed8">로컬 복제본</text>
+  <text x="480" y="192" font-size="12" fill="#475569">콜백 제거 — 소스가 죽어도 동작</text>
+  <text x="480" y="212" font-size="12" fill="#475569">대가: 데이터 중복 · 복제본 eventual consistency</text>
+
+  <!-- Q3: event sourcing -->
+  <rect x="24" y="276" width="416" height="200" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="306" font-size="14.5" font-weight="700" fill="#1d4ed8">③ event sourcing</text>
+  <rect x="44" y="326" width="150" height="26" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="119" y="343" text-anchor="middle" font-size="11" fill="#334155">접수 생성됨</text>
+  <rect x="44" y="356" width="150" height="26" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="119" y="373" text-anchor="middle" font-size="11" fill="#334155">접수 확정됨</text>
+  <rect x="44" y="386" width="150" height="26" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="119" y="403" text-anchor="middle" font-size="11" fill="#334155">접수 취소됨</text>
+  <text x="119" y="432" text-anchor="middle" font-size="11" fill="#64748b">append-only 이벤트 로그</text>
+  <line x1="200" y1="370" x2="290" y2="370" stroke="#64748b" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="245" y="362" text-anchor="middle" font-size="11" fill="#475569">replay</text>
+  <rect x="296" y="350" width="120" height="40" rx="7" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="356" y="374" text-anchor="middle" font-size="12" fill="#334155">현재 상태</text>
+  <text x="44" y="460" font-size="12" fill="#475569">감사 추적·시점 복원이 도메인 가치일 때 · snapshot으로 replay 비용 절감</text>
+
+  <!-- Q4: CQRS -->
+  <rect x="460" y="276" width="416" height="200" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="480" y="306" font-size="14.5" font-weight="700" fill="#1d4ed8">④ CQRS</text>
+  <rect x="480" y="330" width="110" height="40" rx="7" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="535" y="349" text-anchor="middle" font-size="12" fill="#334155">쓰기 모델</text>
+  <text x="535" y="363" text-anchor="middle" font-size="10.5" fill="#64748b">Command</text>
+  <rect x="742" y="330" width="110" height="40" rx="7" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="797" y="349" text-anchor="middle" font-size="12" fill="#334155">읽기 모델</text>
+  <text x="797" y="363" text-anchor="middle" font-size="10.5" fill="#64748b">Query 전용 뷰</text>
+  <line x1="594" y1="350" x2="738" y2="350" stroke="#64748b" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="666" y="342" text-anchor="middle" font-size="11" fill="#475569">이벤트 → projection</text>
+  <text x="666" y="392" text-anchor="middle" font-size="11" fill="#92400e">반영까지 지연 창 = eventual consistency</text>
+  <text x="480" y="440" font-size="12" fill="#475569">읽기/쓰기 부하 비대칭이 클 때, bounded context 단위로만</text>
+  <text x="480" y="460" font-size="12" fill="#475569">"대부분의 시스템은 CRUD로 충분하다"는 지적이 따라붙는 패턴</text>
+</svg>
