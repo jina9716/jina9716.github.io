@@ -925,3 +925,23 @@ img {
     padding: 1rem;
   }
 }
+
+/* 본문 이미지 확대 */
+.prose img { cursor: zoom-in; }
+.lightbox {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  max-width: 95vw;
+  max-height: 95vh;
+  cursor: zoom-out;
+}
+.lightbox::backdrop { background: rgba(0, 0, 0, 0.85); }
+.lightbox img {
+  display: block;
+  width: 95vw;
+  max-height: 95vh;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 6px;
+}
