@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 380" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
+  <rect x="0" y="0" width="920" height="380" fill="#ffffff"/>
+  <style>
+    .title { font-size: 15px; font-weight: 700; fill: #111; }
+    .source { fill: #f5f5f5; stroke: #999; stroke-width: 1.3; }
+    .box { fill: #fff; stroke: #2891c4; stroke-width: 1.6; }
+    .target { fill: #f0fbff; stroke: #2891c4; stroke-width: 1.6; }
+    .name { font-size: 12.5px; font-weight: 700; fill: #111; }
+    .item { font-size: 10.5px; fill: #444; }
+    .code { font-size: 10.5px; fill: #2891c4; font-family: 'SF Mono', Menlo, Consolas, monospace; }
+    .formula { font-size: 12px; fill: #111; font-family: 'SF Mono', Menlo, Consolas, monospace; }
+    .arrow { stroke: #3a7ca8; stroke-width: 1.8; fill: none; }
+    .note { font-size: 10.5px; fill: #777; }
+    .grade { font-size: 11.5px; font-weight: 700; fill: #2891c4; }
+  </style>
+  <defs>
+    <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3a7ca8"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="460" y="32" text-anchor="middle">실제 개발 지표가 드래곤 성장으로 이어지는 흐름</text>
+
+  <!-- sources -->
+  <rect class="source" x="30" y="72" width="176" height="66" rx="4"/>
+  <text class="name" x="48" y="96">사내 Prometheus</text>
+  <text class="code" x="48" y="116">claude_code_*_total</text>
+  <text class="note" x="48" y="132">토큰 · 세션 · 비용</text>
+
+  <rect class="source" x="30" y="158" width="176" height="66" rx="4"/>
+  <text class="name" x="48" y="182">DevLake 지표</text>
+  <text class="item" x="48" y="202">커밋 · PR · 배포 · 리드타임</text>
+  <text class="note" x="48" y="218">CSV로 추출해서 사용</text>
+
+  <line class="arrow" x1="206" y1="105" x2="248" y2="140" marker-end="url(#ar2)"/>
+  <line class="arrow" x1="206" y1="191" x2="248" y2="156" marker-end="url(#ar2)"/>
+
+  <!-- UserMetrics -->
+  <rect class="box" x="252" y="112" width="150" height="72" rx="4"/>
+  <text class="name" x="268" y="136">UserMetrics</text>
+  <text class="item" x="268" y="154">input · output 토큰</text>
+  <text class="item" x="268" y="172">커밋 · PR · 코드 줄 수</text>
+
+  <line class="arrow" x1="402" y1="148" x2="444" y2="148" marker-end="url(#ar2)"/>
+
+  <!-- formula -->
+  <rect class="box" x="448" y="106" width="290" height="84" rx="4"/>
+  <text class="name" x="466" y="130">효율 점수</text>
+  <text class="formula" x="466" y="154">(PR×100 + Commit×10 + Code×0.1)</text>
+  <line x1="466" y1="162" x2="716" y2="162" stroke="#111" stroke-width="1"/>
+  <text class="formula" x="466" y="180">Tokens / 1000</text>
+
+  <line class="arrow" x1="593" y1="190" x2="593" y2="222" marker-end="url(#ar2)"/>
+
+  <!-- grade -->
+  <rect class="box" x="448" y="228" width="290" height="58" rx="4"/>
+  <text class="name" x="466" y="250">등급 → 일일 EXP</text>
+  <text class="grade" x="466" y="272">S +50</text>
+  <text class="grade" x="530" y="272">A</text>
+  <text class="grade" x="566" y="272">B</text>
+  <text class="grade" x="602" y="272">C</text>
+  <text class="grade" x="638" y="272">D +2</text>
+  <text class="note" x="672" y="272">백분위 기준</text>
+
+  <line class="arrow" x1="738" y1="257" x2="778" y2="257" marker-end="url(#ar2)"/>
+
+  <!-- dragon -->
+  <rect class="target" x="782" y="106" width="108" height="180" rx="4"/>
+  <text class="name" x="836" y="130" text-anchor="middle">드래곤</text>
+  <text class="item" x="836" y="152" text-anchor="middle">전설 3,000</text>
+  <text class="item" x="836" y="172" text-anchor="middle">성체 1,500</text>
+  <text class="item" x="836" y="192" text-anchor="middle">청년기 700</text>
+  <text class="item" x="836" y="212" text-anchor="middle">유년기 300</text>
+  <text class="item" x="836" y="232" text-anchor="middle">해츨링 100</text>
+  <text class="item" x="836" y="252" text-anchor="middle">알 0</text>
+  <text class="note" x="836" y="274" text-anchor="middle">누적 EXP</text>
+
+  <text class="note" x="30" y="326">등급은 절대 점수가 아니라 참가자 전체 분포의 백분위로 매겼다. 토큰을 많이 쓰는 것 자체는 감점이 아니고, 쓴 토큰만큼 결과물이 나왔는지를 본다.</text>
+  <text class="note" x="30" y="346">D등급 드래곤은 "토큰은 태우는데 밥이 없다"며 굶는다.</text>
+</svg>

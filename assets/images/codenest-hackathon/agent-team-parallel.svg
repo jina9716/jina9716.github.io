@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 470" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
+  <rect x="0" y="0" width="920" height="470" fill="#ffffff"/>
+  <style>
+    .title { font-size: 15px; font-weight: 700; fill: #111; }
+    .phase { fill: #f7f7f7; stroke: #999; stroke-width: 1.3; }
+    .phase-label { font-size: 11px; font-weight: 700; fill: #777; letter-spacing: 0.5px; }
+    .lead { fill: #f0fbff; stroke: #2891c4; stroke-width: 1.8; }
+    .mate { fill: #fff; stroke: #2891c4; stroke-width: 1.5; }
+    .name { font-size: 12.5px; font-weight: 700; fill: #111; }
+    .model { font-size: 10px; font-weight: 600; fill: #2891c4; }
+    .item { font-size: 10.5px; fill: #444; }
+    .code { font-size: 10px; fill: #2891c4; font-family: 'SF Mono', Menlo, Consolas, monospace; }
+    .arrow { stroke: #3a7ca8; stroke-width: 1.8; fill: none; }
+    .note { font-size: 10.5px; fill: #777; }
+  </style>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3a7ca8"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="460" y="30" text-anchor="middle">Agent Teams 병렬 개발: Lead가 공용 파일을 먼저 확정하고, teammate 4명이 서로 다른 파일을 소유</text>
+
+  <!-- Phase 0 -->
+  <text class="phase-label" x="40" y="66">PHASE 0 · 순차</text>
+  <rect class="lead" x="140" y="52" width="740" height="66" rx="5"/>
+  <text class="name" x="162" y="76">Lead <tspan class="model">Opus</tspan></text>
+  <text class="item" x="162" y="96">shared 타입·상수</text>
+  <text class="item" x="300" y="96">Prisma 스키마 · 시드</text>
+  <text class="item" x="470" y="96">JWT · auth middleware</text>
+  <text class="item" x="650" y="96">서버 골격 <tspan class="code">index.ts</tspan> <tspan class="code">ioc.ts</tspan></text>
+  <text class="note" x="162" y="112">충돌 위험이 큰 공용 파일은 여기서 미리 다 써 둔다</text>
+
+  <line class="arrow" x1="460" y1="118" x2="460" y2="150" marker-end="url(#ar)"/>
+
+  <!-- Phase 1 -->
+  <text class="phase-label" x="40" y="172">PHASE 1 · 병렬</text>
+  <rect class="mate" x="140" y="156" width="176" height="130" rx="5"/>
+  <text class="name" x="158" y="178">backend-character</text>
+  <text class="model" x="158" y="194">Sonnet</text>
+  <text class="item" x="158" y="214">dragon · nest</text>
+  <text class="item" x="158" y="232">onboarding · user</text>
+  <text class="item" x="158" y="250">auth controller</text>
+  <text class="code" x="158" y="272">apps/server/src</text>
+
+  <rect class="mate" x="328" y="156" width="176" height="130" rx="5"/>
+  <text class="name" x="346" y="178">backend-economy</text>
+  <text class="model" x="346" y="194">Sonnet</text>
+  <text class="item" x="346" y="214">shop · inventory</text>
+  <text class="item" x="346" y="232">battle · metrics</text>
+  <text class="item" x="346" y="250">AI 심사 service</text>
+  <text class="code" x="346" y="272">apps/server/src</text>
+
+  <rect class="mate" x="516" y="156" width="176" height="130" rx="5"/>
+  <text class="name" x="534" y="178">frontend-shell</text>
+  <text class="model" x="534" y="194">Sonnet</text>
+  <text class="item" x="534" y="214">사이드바 · 레이아웃</text>
+  <text class="item" x="534" y="232">홈 · 랭킹 카드</text>
+  <text class="item" x="534" y="250">로그인 · 회원가입</text>
+  <text class="code" x="534" y="272">apps/web/src</text>
+
+  <rect class="mate" x="704" y="156" width="176" height="130" rx="5"/>
+  <text class="name" x="722" y="178">frontend-dragon</text>
+  <text class="model" x="722" y="194">Sonnet</text>
+  <text class="item" x="722" y="214">드래곤 렌더러</text>
+  <text class="item" x="722" y="232">둥지 드래그앤드롭</text>
+  <text class="item" x="722" y="250">상점 · 대결 · 온보딩</text>
+  <text class="code" x="722" y="272">apps/web/src</text>
+
+  <text class="note" x="140" y="306">apps/server ∥ apps/web, 같은 앱 안에서도 controller/page 파일이 겹치지 않게 소유권을 나눠 둔 조합만 동시에 돌렸다.</text>
+  <text class="note" x="140" y="324">TSOA route 재생성은 파일 하나를 같이 건드리므로 백엔드 두 명이 순서를 지켜 실행했다.</text>
+
+  <line class="arrow" x1="460" y1="336" x2="460" y2="368" marker-end="url(#ar)"/>
+
+  <!-- Phase 2 -->
+  <text class="phase-label" x="40" y="390">PHASE 2 · 재배정</text>
+  <rect class="phase" x="140" y="374" width="740" height="60" rx="5"/>
+  <text class="item" x="162" y="398">대결 AI 심사 연동 · 결과 연출</text>
+  <text class="item" x="400" y="398">홈 히어로 애니메이션</text>
+  <text class="item" x="640" y="398">드래곤 감정 · 대사 시스템</text>
+  <text class="note" x="162" y="420">Phase 1이 끝난 teammate를 남은 시간 동안 다시 배정</text>
+</svg>
