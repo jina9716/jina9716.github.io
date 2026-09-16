@@ -100,9 +100,24 @@ export class ReceiptCreateService {
 - **Phase 2 - 컬렉션 오너십 정리** (완료) - 도메인 서버가 자기 도메인이 아닌 다른 도메인의 MongoDB 컬렉션까지 직접 읽고 쓰는 경우가 꽤 있었습니다. 이걸 끊어서 각 컬렉션 소유권을 해당 도메인 서버로 귀속시켰고, 다른 도메인에서 그 데이터가 필요하면 `dd-external-api`를 통한 API 호출이나 이벤트로 접근하게 바꿨습니다.
 - **Phase 3 - DB 논리 분리** - 처음에는 클러스터를 쪼개는 물리 분리로 갈 계획이었다가 의사결정 과정에서 논리 분리로 방향을 틀었습니다. 이 글을 쓸 때는 진행 중이었고 이후 완료했습니다. 과정은 [MSA - 원칙, 아키텍처, 그리고 DB 분리](/blog/2026/07/09/msa-principles-architecture-db-split/)의 7장에 정리했습니다 - 이 글의 Phase 2·3이 그 글의 ① 접근 분리·② schema 분리에 해당합니다.
 
+<img src="/assets/images/msa-transition/phase-split.svg" alt="Phase 1은 API를 옮기고, Phase 2는 남의 컬렉션 직접 접근을 끊고, Phase 3은 같은 클러스터 안에서 DB를 나눈다" />
+
 Phase 2를 돌리면서 도메인 간 직접 참조를 전부 걷어냈습니다. `dd-external-api`는 DDD의 **Anti-Corruption Layer** 역할을 합니다 - 외부 도메인의 DTO 형식이 내 Bounded Context 모델을 직접 오염시키지 않도록, 외부 스키마를 내 도메인 언어로 번역해 넘깁니다.
 
 > **Anti-Corruption Layer(ACL, 부패 방지 계층)** - 외부 시스템(다른 Bounded Context, 외부 API, 레거시 등)과 내 도메인 사이에 두는 번역 계층. 외부의 스키마·용어·상태값이 내 도메인 코드에 직접 섞이지 않도록 가운데서 매핑한다. 외부 API가 바뀌어도 이 계층만 수정하면 되고, 내 도메인 모델은 Ubiquitous Language 그대로 유지된다.
+
+Phase 3은 처음에 클러스터 자체를 쪼개는 물리 분리로 잡았습니다. 착수 전에 두 방식이 각각 무엇을 주는지 나열해 봤습니다.
+
+| | 클러스터 물리 분리 | 같은 클러스터 내 DB 분리 |
+|---|---|---|
+| 도메인별 권한 경계 | 확보 | 확보 |
+| 독립적인 스키마 변경 | 확보 | 확보 |
+| 부하·장애 격리 | 확보 | 안 됨 |
+| 운영 비용 | 클러스터 수만큼 증가 | 그대로 |
+
+DB를 쪼개려던 목적은 두 가지였습니다. 도메인이 남의 컬렉션을 직접 건드리지 못하게 막는 것, 그리고 스키마를 각자 속도로 바꿀 수 있게 하는 것. 둘 다 같은 클러스터 안에서 DB만 나눠도 그대로 확보됩니다. 물리 분리에만 있는 칸은 부하·장애 격리 하나였는데, 당시 지표로는 단일 클러스터로 충분히 감당되고 있었습니다. 반대로 클러스터를 여러 개 굴리면 운영 비용은 그만큼 계속 나갑니다.
+
+그래서 아직 필요하지 않은 격리를 위해 상시 비용을 늘리는 대신, 같은 클러스터 안에서 DB만 나누는 쪽을 택했습니다. Phase 1·2를 거치며 도메인 간 직접 참조는 이미 걷어낸 뒤라 남은 일은 컬렉션을 도메인별 DB로 옮기는 것이었고, 최종적으로 104개 컬렉션을 6개 DB로 나눴습니다. 부하 격리가 실제로 필요해지는 시점이 오면 그때 클러스터를 쪼개도 늦지 않다고 판단했습니다.
 
 ### 3.4 전환 방식 - Strangler Fig
 
@@ -120,11 +135,21 @@ Phase 2를 돌리면서 도메인 간 직접 참조를 전부 걷어냈습니다
 
 살아 있는 API는 한 엔드포인트 = 한 Jira 티켓으로 묶어서 관리했습니다. 처음부터 "126건 이관"을 계획한 게 아니라, 전수조사를 하면서 티켓을 하나씩 만들어 붙여 나갔고 프로젝트가 끝나고 돌아보니 126개가 돼 있었습니다.
 
-### 4.2 라우팅 전환과 배포 후 모니터링
+### 4.2 이관 순서와 담당 배분
+
+126개를 어떤 순서로 뒤집을지가 다음 문제였습니다. 기준은 세 가지였습니다. 트래픽이 낮은 것, 장애가 나도 영향이 작은 것, 다른 도메인을 적게 물고 있는 것.
+
+접수예약은 이 기준의 정반대에 있었습니다. 트래픽이 가장 많고 로직이 가장 복잡한 데다, 실패했을 때 영향도 제일 컸습니다. 그래서 초반 작업 대상에서 뺐습니다. 앞쪽 도메인에서 라우팅 전환·모니터링·롤백 절차를 충분히 돌려 본 뒤에 붙는 편이 안전하다고 봤습니다.
+
+담당은 티켓 풀에서 하나씩 집어 가는 방식이 아니라 도메인별로 고정했습니다. 옮겨 오는 코드가 그 도메인 서버의 기존 엔티티·컨벤션과 맞물려야 해서, 한 사람이 한 도메인을 계속 보는 쪽이 재설계 판단이 빨랐습니다.
+
+10개월을 Phase 단위로 깔끔하게 끊지는 못했습니다. Phase 1(API 이관)을 돌리다 보면 옮기려는 API가 남의 컬렉션을 직접 읽고 있어서 Phase 2(컬렉션 오너십 정리)를 같이 해야 하는 경우가 계속 나왔습니다. 결국 10개월은 Phase 1과 2가 겹쳐서 굴러간 기간입니다.
+
+### 4.3 라우팅 전환과 배포 후 모니터링
 
 엔드포인트 단위로 Gateway 라우팅을 뒤집어 트래픽을 도메인 서버로 넘긴 뒤, 24~72시간은 지표를 계속 보면서 이상 여부를 확인했습니다. 배포가 끝났다고 바로 손 떼지 않았고, 문제가 있으면 라우팅을 되돌리거나 후속 작업을 새 티켓으로 열었습니다.
 
-### 4.3 동기는 REST, 비동기는 Kafka
+### 4.4 동기는 REST, 비동기는 Kafka
 
 규칙은 단순하게 잡았습니다. 응답이 필요하면 REST, 필요 없으면 Kafka.
 
@@ -144,7 +169,7 @@ const breaker = createCircuitBreaker(sdk);
 breaker.fire(sdk => sdk.get('/reception/...'));
 ```
 
-### 4.4 이벤트 - 멱등성과 순서
+### 4.5 이벤트 - 멱등성과 순서
 
 Kafka는 at-least-once 보장이라 컨슈머 쪽에서 순서와 중복을 감당해야 합니다.
 
@@ -170,40 +195,46 @@ async changeHospitalReservation(
 
 접수·예약 상태 변경처럼 여러 도메인이 함께 반응해야 하는 시나리오는 분산 트랜잭션을 쓰지 않고 Domain Event를 Kafka로 발행해 연쇄 처리합니다. `HOSPITAL_RESERVATION_CHANGE` 토픽을 구독한 각 컨슈머가 캐시 정리·통계 반영·알림 발송을 독립적으로 수행합니다. 발행자(Reception)는 누가 듣는지 모르고, 구독자는 자신의 Bounded Context 안에서 자율적으로 처리합니다. 보상이 필요한 실패 케이스는 컨슈머에서 예외 로깅 후 재처리 큐로 넘기거나, 상태 머신이 허용하지 않는 전이면 명시적으로 무시합니다.
 
-### 4.5 예약 경합과 분산 락
+<img src="/assets/images/msa-transition/event-chain.svg" alt="Reception이 발행한 접수 변경 이벤트를 캐시 정리·통계 반영·알림 발송 컨슈머가 각각 독립적으로 처리한다" />
+
+### 4.6 예약 경합과 분산 락
 
 예약 경합(동일 시간대 한 자리에 여러 사용자가 진입)은 분산 환경에서 가장 자주 터지는 장애 원인입니다. 이관 당시에는 Redis `SETNX` 기반 분산 락으로 구현했습니다. 시간 구간(5분) 단위로 키를 쪼개 병렬로 획득하고, 하나라도 실패하면 획득한 키를 전부 해제한 뒤 예외를 던지는 구조입니다.
 
 ```typescript
-// 이관 당시 SETNX 기반 구현 개요 - 실제 스니펫이 아니라 패턴 예시
-// SET ... NX EX - SETNX + TTL을 원자적으로
-const intervals = splitTimeRangeBy5Minutes(reservationTime, endTime);
+// libs/domain/src/reception/services/request-reservation-lock.service.ts
+// LOCK_TTL = 60 * 1000 (1분), lock()은 SET key ts PX ttl NX
+const intervals = this.splitTimeRangeBy5Minutes(reservationTime, endTime);
 const keys = intervals.map(i =>
-  `reservation-lock:${hospitalId}:${unitKey}:${reservationDate}:${i.start}-${i.end}`,
+  this.makeRedlockKey(hospitalId, unitKey, reservationDate, i.startTime, i.endTime),
 );
 
-const acquired: string[] = [];
-for (const key of keys) {
-  const ok = await redis.set(key, '1', 'NX', 'EX', LOCK_TTL_SECONDS);
-  if (ok !== 'OK') {
-    if (acquired.length > 0) await redis.del(...acquired);
-    throw new ForbiddenError(
-      '선택하신 시간은 이미 다른 환자가 예약 중이에요. 다른 시간을 선택해 주세요.',
-    );
+// 병렬로 lock 획득
+const results = await Promise.all(
+  keys.map(key => this.redlockSvc.lock(key, this.LOCK_TTL)),
+);
+
+// 하나라도 실패하면 성공한 lock 모두 해제
+const acquiredKeys = keys.filter((_, i) => results[i]);
+if (acquiredKeys.length !== keys.length) {
+  if (acquiredKeys.length > 0) {
+    await this.redis.del(...acquiredKeys);
   }
-  acquired.push(key);
+  throw new ForbiddenError(
+    '선택하신 시간은 이미 다른 환자가 예약 중이에요. 다른 시간을 선택해 주세요.',
+  );
 }
 ```
 
 5분 단위로 쪼개는 이유는 진료 단위(timeUnit)가 병원마다 다르고(5~30분) 구간이 걸쳐 있는 예약 요청을 안전하게 직렬화하기 위해서입니다.
 
-### 4.6 인프라 정리
+### 4.7 인프라 정리
 
 - **Lambda 제거** - 단발성 기능을 Kafka Consumer로 통합 이관.
 - **AWS Batch → Argo Workflow** - Kubernetes 네이티브로 옮겨 로깅/모니터링을 중앙화. DAG 기반 의존 관리가 선언적으로 됩니다.
 - **공유 컬렉션 분리** - 두 도메인이 공유하던 컬렉션을 오너십 기준으로 쪼개고, 반대쪽 도메인은 이벤트/API로 접근.
 
-### 4.7 배포 후 체크리스트
+### 4.8 배포 후 체크리스트
 
 이관 작업이 한참 돌아가던 중반에, "에러 로그 없으면 성공"이라는 기준이 몇 번 실패했습니다. 이관 자체는 성공했는데 외부 연동 타임아웃 설정이 달라 간헐적 실패가 나거나, 신규 엔드포인트 p99가 조용히 늘어나거나 하는 식이었습니다. 그때부터 배포 후 확인 항목을 체크리스트로 고정해 두고 썼습니다.
 
@@ -224,11 +255,13 @@ for (const key of keys) {
 |---|---|---|
 | 배포 단위 | 전체 서비스 일괄 | 도메인별 독립 배포 |
 | 배포 빈도 | 주 2~3회 | 주 8~10회 |
-| 평균 배포 시간 | 15분 | 5분 |
+| 배포 소요 시간 | 15분 | 5분 |
 | 장애 영향 범위 | 전체 서비스 | 해당 도메인만 격리 |
 | 피크 스케일링 단위 | 전체 서버 | 병목 도메인만 |
 | 이관 티켓 | - | 126건, 10개월 |
 | app-server 트래픽 | 100% | 점진적 감소 후 컷오프 |
+
+배포 빈도와 소요 시간은 따로 계측한 값이 아니라 당시 팀에서 체감하던 수치입니다. 이관 티켓 126건은 Jira 기준입니다.
 
 ## 6. 회고
 

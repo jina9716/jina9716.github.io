@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 400" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
+  <rect x="0" y="0" width="860" height="400" fill="#ffffff"/>
+  <style>
+    .domain { fill: #eef7f0; stroke: #3a8a55; stroke-width: 1.4; }
+    .kafka { fill: #f6f3ff; stroke: #8a6fd9; stroke-width: 1.8; }
+    .part { fill: #fff; stroke: #b9a9e8; stroke-width: 1; }
+    .consumer { fill: #fff; stroke: #3a8a55; stroke-width: 1.3; }
+    .note { fill: #fafafa; stroke: #ddd; stroke-width: 1; }
+    .title { font-size: 14px; font-weight: 600; fill: #111; }
+    .heading { font-size: 13px; font-weight: 600; fill: #111; }
+    .label { font-size: 12px; fill: #222; }
+    .small { font-size: 11px; fill: #555; }
+    .muted { font-size: 11px; fill: #888; }
+    .mono { font-size: 10px; fill: #6b4fc0; }
+    .arrow-kafka { stroke: #8a6fd9; stroke-width: 1.8; fill: none; }
+  </style>
+  <defs>
+    <marker id="e-kafka" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8a6fd9"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="430" y="28" text-anchor="middle">Domain Event — 발행자는 누가 듣는지 모른다</text>
+
+  <!-- Publisher -->
+  <rect class="domain" x="40" y="145" width="160" height="76" rx="5"/>
+  <text class="heading" x="120" y="176" text-anchor="middle">Reception</text>
+  <text class="small" x="120" y="196" text-anchor="middle">접수 · 예약 상태 변경</text>
+
+  <path class="arrow-kafka" d="M200,183 L266,183" marker-end="url(#e-kafka)"/>
+  <text class="muted" x="233" y="174" text-anchor="middle">발행</text>
+
+  <!-- Kafka topic -->
+  <rect class="kafka" x="270" y="118" width="210" height="136" rx="6"/>
+  <text class="heading" x="375" y="140" text-anchor="middle">Kafka</text>
+  <text class="mono" x="375" y="158" text-anchor="middle">HOSPITAL_RESERVATION_CHANGE</text>
+
+  <rect class="part" x="282" y="170" width="186" height="22" rx="3"/>
+  <text class="small" x="375" y="185" text-anchor="middle">partition 0</text>
+  <rect class="part" x="282" y="196" width="186" height="22" rx="3"/>
+  <text class="small" x="375" y="211" text-anchor="middle">partition 1</text>
+  <rect class="part" x="282" y="222" width="186" height="22" rx="3"/>
+  <text class="small" x="375" y="237" text-anchor="middle">partition 2</text>
+
+  <!-- Consumers -->
+  <path class="arrow-kafka" d="M480,180 L556,124" marker-end="url(#e-kafka)"/>
+  <path class="arrow-kafka" d="M480,187 L556,192" marker-end="url(#e-kafka)"/>
+  <path class="arrow-kafka" d="M480,194 L556,260" marker-end="url(#e-kafka)"/>
+
+  <rect class="consumer" x="560" y="95" width="260" height="58" rx="5"/>
+  <text class="label" x="690" y="120" text-anchor="middle">캐시 정리</text>
+  <text class="small" x="690" y="139" text-anchor="middle">변경된 접수 관련 캐시 무효화</text>
+
+  <rect class="consumer" x="560" y="163" width="260" height="58" rx="5"/>
+  <text class="label" x="690" y="188" text-anchor="middle">통계 반영</text>
+  <text class="small" x="690" y="207" text-anchor="middle">일별 접수 · 예약 집계</text>
+
+  <rect class="consumer" x="560" y="231" width="260" height="58" rx="5"/>
+  <text class="label" x="690" y="256" text-anchor="middle">알림 발송</text>
+  <text class="small" x="690" y="275" text-anchor="middle">푸시 · 알림톡</text>
+
+  <text class="muted" x="690" y="82" text-anchor="middle">각 컨슈머는 자기 Bounded Context 안에서 독립 처리</text>
+
+  <!-- note -->
+  <rect class="note" x="40" y="308" width="780" height="62" rx="5"/>
+  <text class="small" x="58" y="332">순서 — 파티션 키를 hospitalId로 잡아 같은 병원의 이벤트는 같은 파티션으로 보낸다. 컨슈머가 받는 순서가 유지된다.</text>
+  <text class="small" x="58" y="354">중복 · 역순 — 접수 도메인에 원래 있던 상태 머신(RECEPTION_STATE)이 허용하지 않는 전이를 막아 대부분 그대로 무시된다.</text>
+</svg>

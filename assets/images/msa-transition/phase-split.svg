@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 445" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
+  <rect x="0" y="0" width="940" height="445" fill="#ffffff"/>
+  <style>
+    .legacy { fill: #f7f7f7; stroke: #b5b5b5; stroke-width: 1.2; stroke-dasharray: 5 3; }
+    .domain { fill: #eef7f0; stroke: #3a8a55; stroke-width: 1.4; }
+    .db { fill: #fbfbfb; stroke: #666; stroke-width: 1.3; }
+    .coll { fill: #fff; stroke: #999; stroke-width: 1; }
+    .coll-own { fill: #f4fbf5; stroke: #3a8a55; stroke-width: 1.2; }
+    .head { fill: #f4f4f4; stroke: #ccc; stroke-width: 1; }
+    .cluster { fill: none; stroke: #999; stroke-width: 1.2; stroke-dasharray: 4 3; }
+    .title { font-size: 14px; font-weight: 600; fill: #111; }
+    .heading { font-size: 13px; font-weight: 600; fill: #111; }
+    .label { font-size: 12px; fill: #222; }
+    .small { font-size: 11px; fill: #555; }
+    .muted { font-size: 11px; fill: #888; }
+    .arrow-cross { stroke: #b5b5b5; stroke-width: 1.3; fill: none; stroke-dasharray: 5 3; }
+    .arrow-own { stroke: #3a8a55; stroke-width: 1.6; fill: none; }
+    .arrow-api { stroke: #3a8a55; stroke-width: 1.4; fill: none; }
+    .cut { stroke: #c1443f; stroke-width: 2; fill: none; }
+  </style>
+  <defs>
+    <marker id="p-own" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3a8a55"/>
+    </marker>
+    <marker id="p-cross" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b5b5b5"/>
+    </marker>
+    <marker id="p-api-e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3a8a55"/>
+    </marker>
+    <marker id="p-api-s" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3a8a55"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="470" y="28" text-anchor="middle">분리 3단계 — 각 단계에서 무엇을 끊는가</text>
+
+  <!-- ============ Phase 1 ============ -->
+  <rect class="head" x="30" y="52" width="280" height="34" rx="4"/>
+  <text class="heading" x="170" y="74" text-anchor="middle">Phase 1 — API 분리</text>
+
+  <rect class="legacy" x="40" y="115" width="115" height="54" rx="4"/>
+  <text class="label" x="97" y="138" text-anchor="middle" fill="#777">app-server</text>
+  <text class="small" x="97" y="155" text-anchor="middle" fill="#888">legacy</text>
+
+  <rect class="domain" x="185" y="115" width="125" height="54" rx="4"/>
+  <text class="label" x="247" y="138" text-anchor="middle">도메인 서버</text>
+  <text class="small" x="247" y="155" text-anchor="middle">API · Consumer</text>
+
+  <rect class="db" x="40" y="270" width="270" height="72" rx="5"/>
+  <text class="small" x="175" y="288" text-anchor="middle" font-weight="600">단일 DB</text>
+  <rect class="coll" x="52" y="298" width="78" height="30" rx="3"/>
+  <text class="small" x="91" y="317" text-anchor="middle">컬렉션 A</text>
+  <rect class="coll" x="140" y="298" width="78" height="30" rx="3"/>
+  <text class="small" x="179" y="317" text-anchor="middle">컬렉션 B</text>
+  <rect class="coll" x="228" y="298" width="78" height="30" rx="3"/>
+  <text class="small" x="267" y="317" text-anchor="middle">컬렉션 C</text>
+
+  <path class="arrow-cross" d="M90,169 L91,296" marker-end="url(#p-cross)"/>
+  <path class="arrow-cross" d="M108,169 L262,296" marker-end="url(#p-cross)"/>
+  <path class="arrow-cross" d="M235,169 L96,296" marker-end="url(#p-cross)"/>
+  <path class="arrow-cross" d="M252,169 L184,296" marker-end="url(#p-cross)"/>
+
+  <text class="small" x="170" y="372" text-anchor="middle">API · Consumer · Batch를 도메인 서버로 옮긴다.</text>
+  <text class="small" x="170" y="390" text-anchor="middle">DB는 아직 한 곳을 같이 보고, 남의 컬렉션도 직접 읽는다.</text>
+
+  <!-- ============ Phase 2 ============ -->
+  <rect class="head" x="330" y="52" width="280" height="34" rx="4"/>
+  <text class="heading" x="470" y="74" text-anchor="middle">Phase 2 — 컬렉션 오너십</text>
+
+  <rect class="domain" x="340" y="115" width="120" height="54" rx="4"/>
+  <text class="label" x="400" y="138" text-anchor="middle">도메인 A</text>
+  <text class="small" x="400" y="155" text-anchor="middle">서버</text>
+
+  <rect class="domain" x="490" y="115" width="120" height="54" rx="4"/>
+  <text class="label" x="550" y="138" text-anchor="middle">도메인 B</text>
+  <text class="small" x="550" y="155" text-anchor="middle">서버</text>
+
+  <path class="arrow-api" d="M460,142 L488,142" marker-start="url(#p-api-s)" marker-end="url(#p-api-e)"/>
+  <text class="muted" x="475" y="182" text-anchor="middle" fill="#3a8a55">API · 이벤트</text>
+
+  <rect class="db" x="340" y="270" width="270" height="72" rx="5"/>
+  <text class="small" x="475" y="288" text-anchor="middle" font-weight="600">단일 DB (소유권만 확정)</text>
+  <rect class="coll-own" x="352" y="298" width="78" height="30" rx="3"/>
+  <text class="small" x="391" y="317" text-anchor="middle">컬렉션 A</text>
+  <rect class="coll-own" x="440" y="298" width="78" height="30" rx="3"/>
+  <text class="small" x="479" y="317" text-anchor="middle">컬렉션 B</text>
+  <rect class="coll-own" x="528" y="298" width="78" height="30" rx="3"/>
+  <text class="small" x="567" y="317" text-anchor="middle">컬렉션 C</text>
+
+  <path class="arrow-own" d="M395,169 L391,296" marker-end="url(#p-own)"/>
+  <path class="arrow-own" d="M545,169 L482,296" marker-end="url(#p-own)"/>
+  <path class="arrow-own" d="M560,169 L566,296" marker-end="url(#p-own)"/>
+
+  <path class="arrow-cross" d="M412,169 L556,296"/>
+  <g transform="translate(484,232)">
+    <path class="cut" d="M-7,-7 L7,7 M-7,7 L7,-7"/>
+  </g>
+
+  <text class="small" x="470" y="372" text-anchor="middle">남의 컬렉션 직접 접근을 끊고 API·이벤트로만 받는다.</text>
+  <text class="small" x="470" y="390" text-anchor="middle">컬렉션마다 소유 도메인이 확정된다.</text>
+
+  <!-- ============ Phase 3 ============ -->
+  <rect class="head" x="630" y="52" width="280" height="34" rx="4"/>
+  <text class="heading" x="770" y="74" text-anchor="middle">Phase 3 — DB 논리 분리</text>
+
+  <rect class="domain" x="640" y="115" width="120" height="54" rx="4"/>
+  <text class="label" x="700" y="138" text-anchor="middle">도메인 A</text>
+  <text class="small" x="700" y="155" text-anchor="middle">서버</text>
+
+  <rect class="domain" x="790" y="115" width="120" height="54" rx="4"/>
+  <text class="label" x="850" y="138" text-anchor="middle">도메인 B</text>
+  <text class="small" x="850" y="155" text-anchor="middle">서버</text>
+
+  <path class="arrow-api" d="M760,142 L788,142" marker-start="url(#p-api-s)" marker-end="url(#p-api-e)"/>
+
+  <rect class="cluster" x="630" y="258" width="290" height="92" rx="6"/>
+  <text class="muted" x="637" y="252">같은 클러스터 (분리하지 않음)</text>
+
+  <rect class="db" x="645" y="276" width="128" height="56" rx="5"/>
+  <text class="small" x="709" y="298" text-anchor="middle" font-weight="600">DB — 도메인 A</text>
+  <text class="muted" x="709" y="316" text-anchor="middle">컬렉션 A</text>
+
+  <rect class="db" x="783" y="276" width="128" height="56" rx="5"/>
+  <text class="small" x="847" y="298" text-anchor="middle" font-weight="600">DB — 도메인 B</text>
+  <text class="muted" x="847" y="316" text-anchor="middle">컬렉션 B · C</text>
+
+  <path class="arrow-own" d="M700,169 L707,272" marker-end="url(#p-own)"/>
+  <path class="arrow-own" d="M850,169 L846,272" marker-end="url(#p-own)"/>
+
+  <text class="small" x="770" y="372" text-anchor="middle">104개 컬렉션을 도메인별 6개 DB로 옮긴다.</text>
+  <text class="small" x="770" y="390" text-anchor="middle">클러스터는 하나 그대로 두고 DB만 나눈다.</text>
+
+  <!-- legend -->
+  <g transform="translate(30,418)">
+    <line class="arrow-own" x1="0" y1="8" x2="36" y2="8" marker-end="url(#p-own)"/>
+    <text class="small" x="46" y="12">자기 도메인 컬렉션 접근</text>
+    <line class="arrow-cross" x1="215" y1="8" x2="251" y2="8" marker-end="url(#p-cross)"/>
+    <text class="small" x="261" y="12">남의 도메인 컬렉션 직접 접근</text>
+    <g transform="translate(455,8)"><path class="cut" d="M-7,-7 L7,7 M-7,7 L7,-7"/></g>
+    <text class="small" x="470" y="12">Phase 2에서 차단</text>
+    <line class="arrow-api" x1="600" y1="8" x2="636" y2="8" marker-start="url(#p-api-s)" marker-end="url(#p-api-e)"/>
+    <text class="small" x="646" y="12">도메인 간 API · 이벤트 호출</text>
+  </g>
+</svg>
