@@ -12,3 +12,11 @@ vendor/
 .idea/
 scripts/
 CLAUDE.md
+
+# AI 도구 작업물
+.agents/
+_workspace/
+skills-lock.json
+
+# 슬라이드 내보내기 산출물
+_slides/*.pdf
