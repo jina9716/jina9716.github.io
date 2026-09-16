@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MSA 기술 공유 — 경계·통신·데이터·DB 분리</title>
+<title>MSA 기술 정리 — 경계·통신·데이터·DB 분리</title>
 <style>
   :root{
     --ink:#10151B; --surface:#1B232C; --surface2:#212B36; --line:#2E3A46;
@@ -126,7 +126,7 @@
 <!-- 1 -->
 <section class="slide cover">
   <div class="eyebrow">MSA TECH SESSION</div>
-  <h1>MSA를 지탱하는 기술<br><span style="color:var(--accent)">경계 · 통신 · 데이터 · DB 분리</span></h1>
+  <h1>MSA 기술 정리<br><span style="color:var(--accent)">경계 · 통신 · 데이터 · DB 분리</span></h1>
   <div class="axes">
     <div class="node">경계<small>어디서 자르나</small></div>
     <div class="arrow">·</div>
@@ -136,7 +136,7 @@
     <div class="arrow">·</div>
     <div class="node hi">DB 분리<small>MongoShake 사례</small></div>
   </div>
-  <div class="who">백엔드 개발자 대상 · 사례: MongoShake 기반 무중단 MongoDB 분리</div>
+  <div class="who">발표자 · 박진아</div>
 </section>
 
 <!-- 2 -->
@@ -149,6 +149,12 @@
     <div class="row"><div class="no">PART 3</div><div class="q">데이터 — 트랜잭션 없이 일관성을 어떻게 지키는가<small>Saga, Outbox, 조회 복제, 분산 락</small></div></div>
     <div class="row"><div class="no">PART 4</div><div class="q">DB 분리 — 운영 중인 DB를 어떻게 무중단으로 나누는가<small>3단계 분리 + MongoShake 실전 사례</small></div></div>
   </div></div>
+</section>
+
+<section class="slide cover center" style="justify-content:center">
+  <div class="eyebrow">PART 1 / 4</div>
+  <h1 style="font-size:5.4rem">경계</h1>
+  <div class="who" style="margin-top:2rem; font-size:1.6rem; color:var(--accent)">서비스를 어디서 자르는가</div>
 </section>
 
 <!-- 3 -->
@@ -264,12 +270,18 @@
         <path d="M50 200 C 180 190, 280 150, 420 40" fill="none" stroke="#E36A5C" stroke-width="3"/>
         <path d="M50 190 C 180 175, 300 170, 420 160" fill="none" stroke="#6FBF8F" stroke-width="3"/>
         <text x="240" y="245" fill="#93A2B0" font-size="13" text-anchor="middle">서비스 개수 →</text>
-        <text x="300" y="70" fill="#E36A5C" font-size="13">운영 비용 (파이프라인·모니터링·경계)</text>
+        <text x="330" y="70" fill="#E36A5C" font-size="13" text-anchor="middle">운영 비용</text>
         <text x="300" y="150" fill="#6FBF8F" font-size="13">분리로 얻는 효용</text>
       </svg>
       <div class="caption">효용 곡선이 꺾이는 지점 너머는 비용만 는다</div>
     </div>
   </div>
+</section>
+
+<section class="slide cover center" style="justify-content:center">
+  <div class="eyebrow">PART 2 / 4</div>
+  <h1 style="font-size:5.4rem">통신</h1>
+  <div class="who" style="margin-top:2rem; font-size:1.6rem; color:var(--accent)">동기와 비동기를 어떻게 섞는가</div>
 </section>
 
 <!-- 8 -->
@@ -295,6 +307,10 @@
       </div>
       <div class="caption">체인 전체 가용성 = 각 구간 가용성의 곱</div>
     </div></div>
+  </div>
+  <div style="border-top:1px solid var(--line); padding-top:1rem; display:flex; gap:2.5rem; align-items:baseline">
+    <span class="dlabel" style="flex:none">참고 — REST vs gRPC</span>
+    <span style="font-size:1.02rem; color:var(--faint)"><span class="m" style="color:var(--blue)">REST</span> 리소스 중심(URL+JSON) · 텍스트 · 브라우저·외부 API 범용&nbsp;&nbsp;/&nbsp;&nbsp;<span class="m" style="color:var(--accent)">gRPC</span> 원격 함수 호출(.proto 계약) · protobuf 바이너리 + HTTP/2 · 내부 핫패스</span>
   </div>
 </section>
 
@@ -330,6 +346,10 @@
       </svg>
       <div class="caption">Circuit Breaker 상태 전이</div>
     </div>
+  </div>
+  <div style="border-top:1px solid var(--line); padding-top:1rem; display:flex; gap:2.5rem; align-items:baseline">
+    <span class="dlabel" style="flex:none">참고 — 지수 백오프 · 지터</span>
+    <span style="font-size:1.02rem; color:var(--faint)"><span class="m" style="color:var(--blue)">백오프</span> 재시도 간격을 1s→2s→4s 두 배씩 늘려 상대에게 회복 시간 확보&nbsp;&nbsp;/&nbsp;&nbsp;<span class="m" style="color:var(--accent)">지터</span> 간격에 랜덤을 섞어 동시 실패한 클라이언트들이 같은 시각에 몰려오는 재시도 파도를 분산</span>
   </div>
 </section>
 
@@ -421,6 +441,12 @@
   </div>
 </section>
 
+<section class="slide cover center" style="justify-content:center">
+  <div class="eyebrow">PART 3 / 4</div>
+  <h1 style="font-size:5.4rem">데이터</h1>
+  <div class="who" style="margin-top:2rem; font-size:1.6rem; color:var(--accent)">트랜잭션 없이 일관성을 어떻게 지키는가</div>
+</section>
+
 <!-- 14 -->
 <section class="slide">
   <div class="eyebrow">PART 3 · 데이터<span class="sub">일관성 문제</span></div>
@@ -441,6 +467,10 @@
       </div>
       <div class="drow" style="justify-content:center; margin-top:.8rem"><div class="dlabel" style="color:var(--red)">이미 커밋된 주문·결제는? — 하나의 트랜잭션으로 묶을 수 없다</div></div>
     </div></div>
+  </div>
+  <div style="border-top:1px solid var(--line); padding-top:1rem; display:flex; gap:2.5rem; align-items:baseline">
+    <span class="dlabel" style="flex:none">참고 — 2PC (Two-Phase Commit)</span>
+    <span style="font-size:1.02rem; color:var(--faint)">코디네이터가 <span class="m" style="color:var(--blue)">① prepare</span> 전 참여자에게 커밋 가능 여부 확인 → <span class="m" style="color:var(--blue)">② commit</span> 전원 OK일 때만 확정하는 분산 원자성 프로토콜&nbsp;&nbsp;/&nbsp;&nbsp;응답 대기 동안 락 유지 + 코디네이터 장애 시 전체 정지 → 병목·단일 장애점</span>
   </div>
 </section>
 
@@ -544,6 +574,12 @@
   </div>
 </section>
 
+<section class="slide cover center" style="justify-content:center">
+  <div class="eyebrow">PART 4 / 4</div>
+  <h1 style="font-size:5.4rem">DB 분리</h1>
+  <div class="who" style="margin-top:2rem; font-size:1.6rem; color:var(--accent)">운영 중인 DB를 어떻게 무중단으로 나누는가</div>
+</section>
+
 <!-- 19 -->
 <section class="slide">
   <div class="eyebrow">PART 4 · DB 분리<span class="sub">왜 마지막 관문인가</span></div>
@@ -585,18 +621,24 @@
       <li>상황: 한 DB(schema)에 여러 도메인 <span class="m">collection</span> 혼재</li>
       <li>제약: 운영 트래픽 유지, <strong>다운타임 불가</strong></li>
       <li>선택: <span class="m">MongoShake</span>로 실시간 동기화 후 컷오버</li>
-    </ul></div>
+    </ul>
+    <table class="tbl" style="font-size:1.12rem; margin-top:2rem">
+      <tr><th>도구</th><th>판단</th></tr>
+      <tr><td class="m mut">mongodump/restore</td><td class="mut">복사 중 변경분 못 따라잡음 → 제외</td></tr>
+      <tr><td class="m mut">mongosync (공식)</td><td class="mut">같은 클러스터 내 논리 분리 미지원 → 제외</td></tr>
+      <tr><td class="m acc">MongoShake</td><td class="acc">oplog 기반 무중단 + 동일 클러스터 내 복제 → 선택</td></tr>
+    </table></div>
     <div class="col-r">
       <div class="vs">
         <div class="panel bad">
           <div class="ph">BEFORE — 혼재</div>
-          <div class="minirow"><span class="chip">접수 col.</span><span class="chip">예약 col.</span></div>
+          <div class="minirow"><span class="chip">접수 col.</span><span class="chip">알림 col.</span></div>
           <div class="minirow"><span class="chip">병원 col.</span><span class="chip">결제 col.</span></div>
           <div class="caption" style="margin-top:1rem">하나의 DB</div>
         </div>
         <div class="panel ok">
           <div class="ph">AFTER — 도메인별 DB</div>
-          <div class="minirow"><span class="chip g">접수 DB</span><span class="chip g">예약 DB</span></div>
+          <div class="minirow"><span class="chip g">접수 DB</span><span class="chip g">알림 DB</span></div>
           <div class="minirow"><span class="chip g">병원 DB</span><span class="chip g">결제 DB</span></div>
           <div class="caption" style="margin-top:1rem">같은 클러스터 내 분리</div>
         </div>
@@ -696,7 +738,7 @@
 <!-- 26 -->
 <section class="slide">
   <div class="eyebrow">WRAP-UP<span class="sub">Key Takeaways</span></div>
-  <h2>정리 — 결합을 끊는 도구 상자</h2>
+  <h2>정리</h2>
   <div class="body">
     <div class="col-l" style="flex:1"><div class="cards h">
       <div class="card hi"><h3>경계</h3><p>쓰기 소유권과 변경 주체로 판정<br><br><span class="m" style="font-size:1.05rem">Bounded Context</span></p></div>
@@ -716,7 +758,7 @@
 
 
 <div class="hud">
-  <span id="counter">1 / 27</span>
+  <span id="counter">1 / 31</span>
   <span>← → 이동</span>
 </div>
 
