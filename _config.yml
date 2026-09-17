@@ -13,6 +13,10 @@ author:
 
 permalink: /blog/:year/:month/:day/:title/
 
+# GoatCounter 사이트 코드. 값을 채우면 방문 집계 스크립트가 붙는다
+# 대시보드: https://<코드>.goatcounter.com
+goatcounter: "jina9716"
+
 markdown: kramdown
 highlighter: rouge
 
