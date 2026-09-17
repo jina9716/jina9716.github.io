@@ -1,0 +1,17 @@
+{%- comment -%}
+  핵심 수치 스트립. 값과 라벨을 콜론으로, 칸을 파이프로 나눈다.
+  사용: {% include metrics.html data="80건:재현·검증한 QA 케이스|7건:새로 발견한 결함" %}
+{%- endcomment -%}
+{%- assign metric_cells = include.data | split: "|" -%}
+{%- if metric_cells.size > 0 -%}
+<div class="metrics">
+  {%- for cell in metric_cells -%}
+  {%- assign metric_value = cell | split: ":" | first | strip -%}
+  {%- assign metric_label = cell | remove_first: metric_value | remove_first: ":" | strip -%}
+  <div class="metrics__cell">
+    <div class="metrics__value{% if metric_value.size > 6 %} metrics__value--long{% endif %}">{{ metric_value }}</div>
+    <div class="metrics__label">{{ metric_label }}</div>
+  </div>
+  {%- endfor -%}
+</div>
+{%- endif -%}

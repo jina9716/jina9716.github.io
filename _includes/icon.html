@@ -1,0 +1,8 @@
+{%- comment -%}
+  Phosphor Icons regular 웨이트. fill이 currentColor라 부모의 color를 따라간다.
+  사용: {% include icon.html name="cube" %}
+  파일: _includes/icons/{name}.svg
+{%- endcomment -%}
+{%- capture icon_path -%}icons/{{ include.name }}.svg{%- endcapture -%}
+{%- capture icon_raw -%}{%- include {{ icon_path }} -%}{%- endcapture -%}
+{{- icon_raw | replace: '<svg ', '<svg aria-hidden="true" focusable="false" ' -}}

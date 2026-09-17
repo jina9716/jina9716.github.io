@@ -1,0 +1,15 @@
+{%- comment -%}
+  요약 박스. 글 첫 h2 바로 위에 넣는다.
+  사용: {% include tldr.html items="항목1|항목2|항목3" %}
+{%- endcomment -%}
+{%- assign tldr_items = include.items | split: "|" -%}
+{%- if tldr_items.size > 0 -%}
+<div class="tldr">
+  <p class="tldr__label"><span class="tldr__dot" aria-hidden="true"></span>TL;DR</p>
+  <ul>
+    {%- for item in tldr_items %}
+    <li>{{ item | strip }}</li>
+    {%- endfor %}
+  </ul>
+</div>
+{%- endif -%}

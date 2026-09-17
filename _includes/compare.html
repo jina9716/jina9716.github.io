@@ -1,0 +1,24 @@
+{%- comment -%}
+  전후 비교. 각 값의 첫 항목이 라벨이고 나머지가 목록이다.
+  사용: {% include compare.html before="라벨|항목1|항목2" after="라벨|항목1|항목2" %}
+{%- endcomment -%}
+{%- assign before_parts = include.before | split: "|" -%}
+{%- assign after_parts = include.after | split: "|" -%}
+<div class="compare">
+  <div class="compare__card compare__card--before">
+    <p class="compare__label">{{ before_parts[0] | strip }}</p>
+    <ul>
+      {%- for item in before_parts offset: 1 %}
+      <li>{{ item | strip }}</li>
+      {%- endfor %}
+    </ul>
+  </div>
+  <div class="compare__card compare__card--after">
+    <p class="compare__label">{{ after_parts[0] | strip }}</p>
+    <ul>
+      {%- for item in after_parts offset: 1 %}
+      <li>{{ item | strip }}</li>
+      {%- endfor %}
+    </ul>
+  </div>
+</div>

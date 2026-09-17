@@ -1,0 +1,115 @@
+/* 본문에 넣는 컴포넌트. 모두 본문 폭 안에 들어간다 */
+
+/* ── TL;DR 박스 ─────────────────────────────── */
+.tldr {
+  margin: 36px 0;
+  padding: 24px 28px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surf-2);
+}
+.tldr__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.tldr__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  flex: none;
+}
+.tldr ul {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 16px;
+  line-height: 1.7;
+}
+.tldr li + li { margin-top: 9px; }
+
+/* ── 핵심 수치 스트립 ────────────────────────── */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  margin: 36px 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surf);
+}
+/* 칸 사이 선만 긋고 컨테이너 테두리와 겹치지 않게 첫 칸은 비운다 */
+.metrics__cell {
+  padding: 22px 24px;
+  border-left: 1px solid var(--line);
+}
+.metrics__cell:first-child { border-left: 0; }
+
+.metrics__value {
+  display: flex;
+  align-items: flex-end;
+  min-height: 39px;
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+  white-space: nowrap;
+}
+/* 범위 표기처럼 긴 값은 칸 안에서 잘리지 않게 줄인다 */
+.metrics__value--long { font-size: clamp(21px, 4.6vw, 30px); }
+
+.metrics__label {
+  margin-top: 9px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--mid);
+}
+
+/* ── Before / After 비교 ────────────────────── */
+.compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+  margin: 36px 0;
+}
+.compare__card {
+  padding: 20px 22px;
+  border-radius: 12px;
+}
+.compare__card--before {
+  border: 1px solid var(--line);
+  background: var(--surf);
+}
+.compare__card--after {
+  border: 1px solid var(--accent);
+  background: var(--surf-2);
+}
+.compare__label {
+  margin: 0 0 12px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.compare__card--before .compare__label { color: var(--dim); }
+.compare__card--after .compare__label { color: var(--accent); }
+
+.compare__card ul {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+.compare__card li + li { margin-top: 6px; }
+.compare__card--before ul { color: var(--mid); }
+.compare__card--after ul { color: var(--text); }
