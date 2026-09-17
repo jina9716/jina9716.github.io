@@ -1,0 +1,66 @@
+---
+layout: default
+---
+<div class="about">
+
+  <section class="about__section">
+    <p class="mono-label">About</p>
+    <h1 class="about__intro-name">{{ site.author.name }}</h1>
+    <div class="about__intro-body">
+      {{ content }}
+    </div>
+  </section>
+
+  {%- if page.work %}
+  <section class="about__section">
+    <span class="mono-label about__label">주요 작업</span>
+    <div class="about__work">
+      {%- for w in page.work %}
+      <article class="about__work-item">
+        <div class="about__work-when">{{ w.when }}</div>
+        <div>
+          <h2 class="about__work-title">{{ w.title }}</h2>
+          <p class="about__work-desc">{{ w.desc }}</p>
+        </div>
+      </article>
+      {%- endfor %}
+    </div>
+  </section>
+  {%- endif %}
+
+  {%- if page.skills %}
+  <section class="about__section">
+    <span class="mono-label about__label">다루는 것</span>
+    <div class="about__pills">
+      {%- for item in page.skills %}
+      <span class="about__pill">{{ item }}</span>
+      {%- endfor %}
+    </div>
+  </section>
+  {%- endif %}
+
+  {%- if page.likes %}
+  <section class="about__section">
+    <span class="mono-label about__label">좋아하는 것</span>
+    {%- if page.likes_lead %}
+    <p class="likes__lead">{{ page.likes_lead }}</p>
+    {%- endif %}
+    <div class="likes">
+      {%- for item in page.likes %}
+      <article class="likes__card">
+        <span class="likes__icon">{% include icon.html name=item.icon %}</span>
+        <div>
+          <h2 class="likes__title">{{ item.title }}</h2>
+          <p class="likes__desc">{{ item.desc }}</p>
+        </div>
+        <span class="likes__now">지금 &mdash; {{ item.now }}</span>
+      </article>
+      {%- endfor %}
+    </div>
+  </section>
+  {%- endif %}
+
+</div>
+  </section>
+
+</div>

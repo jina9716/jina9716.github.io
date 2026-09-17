@@ -1,0 +1,76 @@
+/* 코드블록: 상단 바 + Rouge 하이라이트. 두 테마 모두 어두운 배경 */
+
+div.highlighter-rouge {
+  margin: 0 0 26px;
+  border: 1px solid var(--code-line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--code-bg);
+}
+
+.code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 16px;
+  background: var(--code-head);
+  border-bottom: 1px solid var(--code-line);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--code-dim);
+}
+.code-head__file { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.code-head__right { display: flex; align-items: center; gap: 12px; flex: none; }
+
+.code-copy {
+  border: 0;
+  background: transparent;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--code-dim);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+div.highlighter-rouge:hover .code-copy,
+.code-copy:focus-visible { opacity: 1; }
+.code-copy:hover { color: var(--code-text); background: rgba(255, 255, 255, 0.07); }
+
+div.highlighter-rouge pre,
+div.highlighter-rouge .highlight {
+  margin: 0;
+  background: var(--code-bg);
+}
+div.highlighter-rouge pre {
+  padding: 20px 22px;
+  color: var(--code-text);
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.75;
+  overflow-x: auto;
+}
+div.highlighter-rouge code { font-family: inherit; background: none; padding: 0; }
+
+/* Rouge 토큰 색 */
+.highlight .c, .highlight .c1, .highlight .cm, .highlight .cd, .highlight .cs { color: var(--code-dim); font-style: italic; }
+.highlight .k, .highlight .kd, .highlight .kn, .highlight .kp, .highlight .kr, .highlight .kt, .highlight .kc, .highlight .o, .highlight .ow { color: oklch(0.8 0.12 300); }
+.highlight .s, .highlight .s1, .highlight .s2, .highlight .sb, .highlight .sc, .highlight .sd, .highlight .se, .highlight .sh, .highlight .si, .highlight .sx, .highlight .sr, .highlight .ss { color: oklch(0.83 0.13 100); }
+.highlight .nf, .highlight .nc, .highlight .nd, .highlight .fm, .highlight .na { color: oklch(0.84 0.13 155); }
+.highlight .m, .highlight .mi, .highlight .mf, .highlight .mh, .highlight .mo, .highlight .il { color: oklch(0.82 0.13 40); }
+.highlight .n, .highlight .p, .highlight .nx, .highlight .nv, .highlight .nb, .highlight .nt, .highlight .py, .highlight .w { color: var(--code-text); }
+.highlight .err { color: oklch(0.72 0.19 25); }
+.highlight .gd { color: oklch(0.72 0.19 25); }
+.highlight .gi { color: oklch(0.8 0.15 155); }
+.highlight .gh, .highlight .gu { color: var(--code-dim); }
+
+@media (max-width: 640px) {
+  div.highlighter-rouge pre { padding: 16px 16px; font-size: 12.5px; }
+  .code-copy { opacity: 1; }
+}

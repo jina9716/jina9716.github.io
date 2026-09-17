@@ -1,0 +1,30 @@
+{%- comment -%}
+글 카드. include.post 로 글 객체를 받는다.
+요약은 subtitle을 우선 쓰고 없으면 본문 첫 문단에서 끊는다.
+읽는 시간은 read_time 이 있으면 그 값, 없으면 한국어 분당 500자로 계산한다.
+{%- endcomment -%}
+{%- assign p = include.post -%}
+{%- assign summary = p.subtitle | default: p.excerpt | strip_html | strip_newlines | truncate: 140 -%}
+{%- if p.read_time -%}
+  {%- assign read_time = p.read_time -%}
+{%- else -%}
+  {%- assign chars = p.content | strip_html | strip_newlines | size -%}
+  {%- assign read_time = chars | divided_by: 500 | plus: 1 | append: '분' -%}
+{%- endif -%}
+<a class="post-card" href="{{ p.url | relative_url }}" data-tags="{{ p.tags | join: '|' }}">
+  <div>
+    {%- if p.tags.size > 0 %}
+    <div class="post-card__tags">
+      {%- for tag in p.tags %}
+      <span class="tag-pill">{{ tag }}</span>
+      {%- endfor %}
+    </div>
+    {%- endif %}
+    <h3 class="post-card__title">{{ p.title }}</h3>
+    <p class="post-card__summary">{{ summary }}</p>
+  </div>
+  <div class="post-card__meta">
+    <time datetime="{{ p.date | date_to_xmlschema }}">{{ p.date | date: "%Y.%m.%d" }}</time>
+    <span>{{ read_time }}</span>
+  </div>
+</a>

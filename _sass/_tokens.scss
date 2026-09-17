@@ -1,0 +1,52 @@
+/* 디자인 토큰. 다크가 기본값이고 라이트는 data-theme으로 덮어쓴다 */
+
+:root {
+  --font-sans: 'IBM Plex Sans KR', 'Instrument Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Instrument Sans', 'IBM Plex Sans KR', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --bg: #17181c;
+  --bg-sticky: rgba(23, 24, 28, 0.82);
+  --surf: #1b1d22;
+  --surf-2: #21242b;
+  --line: #292b34;
+  --line-2: #3a3d47;
+  --text: #e9e8e4;
+  --mid: #a8a7a1;
+  --dim: #7a7b83;
+  --accent: oklch(0.84 0.13 155);
+  --on-accent: #10210d;
+
+  /* 코드블록은 두 테마 모두 어두운 배경을 유지한다 */
+  --code-bg: #111317;
+  --code-head: #171a1f;
+  --code-line: #262a31;
+  --code-text: #dfe2e8;
+  --code-dim: #8b8f9a;
+
+  --radius-card: 14px;
+  --radius-pill: 999px;
+  --container: 1120px;
+  --container-prose: 720px;
+  --container-about: 860px;
+  --gutter: 32px;
+  --header-h: 68px;
+}
+
+[data-theme="light"] {
+  --bg: #f8f8f6;
+  --bg-sticky: rgba(248, 248, 246, 0.82);
+  --surf: #ffffff;
+  --surf-2: #f1f1ee;
+  --line: #e4e4e0;
+  --line-2: #d3d3cd;
+  --text: #1a1b1e;
+  --mid: #54555a;
+  --dim: #6b675f;
+  --accent: oklch(0.52 0.12 155);
+  --on-accent: #ffffff;
+
+  --code-bg: #16181d;
+  --code-head: #1d2026;
+  --code-line: #2b2f37;
+}

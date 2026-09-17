@@ -1,38 +1,47 @@
 ---
 layout: default
-title: Blog
+title: 기록
+permalink: /blog/
 ---
-<div class="container">
-  <section class="section-header">
-    <h1 class="section-header__title">Blog</h1>
-    <p class="section-header__desc">실무에서 겪은 기술적 도전과 경험을 기록합니다.</p>
-  </section>
+{%- comment -%} 태그를 글 수 내림차순으로 정렬한다. 두 자리로 채워 문자열 정렬해도 순서가 맞게 한다 {%- endcomment -%}
+{%- assign writing = site.posts | where_exp: "p", "p.category != 'study'" -%}
+{%- assign tag_rows = "" -%}
+{%- for t in site.tags -%}
+  {%- assign c = t[1] | size -%}
+  {%- assign pad = c | prepend: "0" | slice: -2, 2 -%}
+  {%- assign tag_rows = tag_rows | append: pad | append: "~" | append: t[0] | append: "|" -%}
+{%- endfor -%}
+{%- assign rows = tag_rows | split: "|" | sort | reverse -%}
 
-  <section>
-    {% assign blog_posts = site.posts | where: "category", "blog" %}
-    {% if blog_posts.size > 0 %}
-    <ul class="post-list">
-      {% for post in blog_posts %}
-      <li>
-        <a href="{{ post.url | relative_url }}" class="post-card">
-          <span class="post-card__date">{{ post.date | date: "%Y.%m.%d" }}</span>
-          <h3 class="post-card__title">{{ post.title }}</h3>
-          {% if post.excerpt %}
-          <p class="post-card__excerpt">{{ post.excerpt | strip_html | truncatewords: 30 }}</p>
-          {% endif %}
-          {% if post.tags.size > 0 %}
-          <div class="post-card__tags">
-            {% for tag in post.tags %}
-            <span class="tag">{{ tag }}</span>
-            {% endfor %}
-          </div>
-          {% endif %}
-        </a>
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p class="empty-message">아직 작성된 글이 없습니다.</p>
-    {% endif %}
-  </section>
+<div class="container">
+  <header class="page-head">
+    <p class="mono-label page-head__eyebrow">Writing</p>
+    <h1 class="page-head__title">기록</h1>
+  </header>
+
+  {%- if rows.size > 0 %}
+  <div class="filter" id="tag-filter">
+    <span class="mono-label filter__label">주제</span>
+    <button class="filter__btn" type="button" data-tag="" aria-pressed="true">
+      전체 <span class="filter__count">{{ writing.size }}</span>
+    </button>
+    {%- for row in rows %}
+    {%- assign parts = row | split: "~" %}
+    <button class="filter__btn" type="button" data-tag="{{ parts[1] }}" aria-pressed="false">
+      {{ parts[1] }} <span class="filter__count">{{ parts[0] | times: 1 }}</span>
+    </button>
+    {%- endfor %}
+  </div>
+  {%- endif %}
+
+  {%- if writing.size > 0 %}
+  <div class="post-list" id="post-list">
+    {%- for post in writing %}
+    {%- include post-card.html post=post %}
+    {%- endfor %}
+  </div>
+  <p class="empty-message" id="filter-empty" hidden>선택한 주제의 글이 없습니다.</p>
+  {%- else %}
+  <p class="empty-message">아직 작성된 글이 없습니다.</p>
+  {%- endif %}
 </div>

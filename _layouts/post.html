@@ -1,45 +1,84 @@
 ---
 layout: default
 ---
-<article class="post-detail">
-  <header class="post-detail__header">
-    <div class="container">
-      <div class="post-detail__meta">
-        <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%Y년 %m월 %d일" }}</time>
-        {% if page.tags %}
-        <div class="post-detail__tags">
-          {% for tag in page.tags %}
-          <span class="tag">{{ tag }}</span>
-          {% endfor %}
-        </div>
-        {% endif %}
+{%- assign summary = page.subtitle | default: page.excerpt | strip_html | strip_newlines | truncate: 160 -%}
+{%- if page.read_time -%}
+  {%- assign read_time = page.read_time -%}
+{%- else -%}
+  {%- assign chars = content | strip_html | strip_newlines | size -%}
+  {%- assign read_time = chars | divided_by: 500 | plus: 1 | append: '분' -%}
+{%- endif -%}
+
+<div class="post-wrap">
+  <article class="post-col">
+    <a class="post-back" href="{{ '/blog/' | relative_url }}">&larr; 기록</a>
+
+    <header class="post-head">
+      {%- if page.tags.size > 0 %}
+      <div class="post-head__tags">
+        {%- for tag in page.tags %}
+        <span class="tag-pill">{{ tag }}</span>
+        {%- endfor %}
       </div>
-      <h1 class="post-detail__title">{{ page.title }}</h1>
-      {% if page.subtitle %}
-      <p class="post-detail__subtitle">{{ page.subtitle }}</p>
-      {% endif %}
-    </div>
-  </header>
-  <div class="container">
-    <div class="post-detail__content prose">
+      {%- endif %}
+      <h1 class="post-head__title">{{ page.title }}</h1>
+      {%- if summary %}
+      <p class="post-head__summary">{{ summary }}</p>
+      {%- endif %}
+      <div class="post-head__meta">
+        <span><time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%Y.%m.%d" }}</time></span>
+        <span>{{ read_time }}</span>
+        <span>{{ site.author.name }}</span>
+      </div>
+    </header>
+
+    <div class="prose" id="post-body">
       {{ content }}
     </div>
-    <nav class="post-nav">
-      <div class="post-nav__links">
-        {% if page.previous.url %}
-        <a href="{{ page.previous.url | relative_url }}" class="post-nav__link post-nav__link--prev">
-          <span class="post-nav__label">&larr; 이전 글</span>
-          <span class="post-nav__title">{{ page.previous.title }}</span>
+
+    {%- comment -%}
+    발행 순서로 앞뒤 글을 고른다. site.posts는 최신순이라 뒤 인덱스가 오래된 글이다.
+    노트 글은 기록의 앞뒤로 나오지 않게 제외한다.
+    {%- endcomment -%}
+    {%- assign writing = site.posts | where_exp: "p", "p.category != 'study'" -%}
+    {%- assign idx = 0 -%}
+    {%- for p in writing -%}
+      {%- if p.url == page.url -%}{%- assign idx = forloop.index0 -%}{%- endif -%}
+    {%- endfor -%}
+    {%- assign older_i = idx | plus: 1 -%}
+    {%- assign older = writing[older_i] -%}
+    {%- assign newer_i = idx | minus: 1 -%}
+    {%- if newer_i >= 0 -%}{%- assign newer = writing[newer_i] -%}{%- endif -%}
+
+    {%- if older or newer %}
+    <nav class="next-posts" aria-label="다른 글">
+      <span class="mono-label next-posts__label">다른 글</span>
+      <div class="next-posts__list">
+        {%- if older %}
+        <a class="next-post" href="{{ older.url | relative_url }}">
+          <span class="next-post__main">
+            <span class="next-post__dir">&larr; 이전 글</span>
+            <span class="next-post__title">{{ older.title }}</span>
+          </span>
+          <span class="next-post__date">{{ older.date | date: "%Y.%m.%d" }}</span>
         </a>
-        {% endif %}
-        {% if page.next.url %}
-        <a href="{{ page.next.url | relative_url }}" class="post-nav__link post-nav__link--next">
-          <span class="post-nav__label">다음 글 &rarr;</span>
-          <span class="post-nav__title">{{ page.next.title }}</span>
+        {%- endif %}
+        {%- if newer %}
+        <a class="next-post" href="{{ newer.url | relative_url }}">
+          <span class="next-post__main">
+            <span class="next-post__dir">다음 글 &rarr;</span>
+            <span class="next-post__title">{{ newer.title }}</span>
+          </span>
+          <span class="next-post__date">{{ newer.date | date: "%Y.%m.%d" }}</span>
         </a>
-        {% endif %}
+        {%- endif %}
       </div>
-      <a href="{{ '/' | relative_url }}" class="post-nav__all">전체 글 목록</a>
     </nav>
-  </div>
-</article>
+    {%- endif %}
+  </article>
+
+  <details class="toc" id="toc" open>
+    <summary class="toc__summary"><span class="mono-label toc__label">목차</span></summary>
+    <nav class="toc__list" id="toc-list" aria-label="목차"></nav>
+  </details>
+</div>

@@ -8,7 +8,7 @@ timezone: Asia/Seoul
 
 author:
   name: 박진아
-  email: jina9716@naver.com
+  email: jina9716@gmail.com
   bio: "Backend Developer with 10+ years of experience"
 
 permalink: /blog/:year/:month/:day/:title/
@@ -25,6 +25,8 @@ exclude:
   - Gemfile.lock
   - README.md
   - CLAUDE.md
+  - scripts/
+  - skills-lock.json
 
 defaults:
   - scope:
@@ -38,6 +40,3 @@ plugins:
   - jekyll-sitemap
   - jekyll-paginate
   - jekyll-feed
-
-paginate: 5
-paginate_path: "/page:num/"

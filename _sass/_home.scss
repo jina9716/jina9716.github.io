@@ -1,0 +1,86 @@
+/* 홈 히어로, 지표 카드, 섹션 머리 */
+
+.hero { padding: 88px 0 64px; }
+.hero__eyebrow { margin-bottom: 18px; }
+.hero__title {
+  font-size: 44px;
+  line-height: 1.18;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin-bottom: 22px;
+}
+.hero__lead {
+  max-width: 640px;
+  font-size: 17.5px;
+  line-height: 1.8;
+  color: var(--mid);
+}
+
+.hero__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 32px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 22px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-size: 14.5px;
+  line-height: 1;
+}
+.btn--solid {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+.btn--solid:hover { filter: brightness(1.08); }
+.btn--ghost {
+  background: transparent;
+  border-color: var(--line-2);
+  color: var(--text);
+}
+.btn--ghost:hover { background: var(--surf-2); filter: none; }
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+.section-head__title { font-size: 26px; line-height: 1.32; font-weight: 600; }
+.section-head__more { font-size: 14px; font-weight: 500; white-space: nowrap; }
+
+/* 목록 페이지 머리 */
+.page-head { padding: 78px 0 42px; }
+.page-head__eyebrow { margin-bottom: 18px; }
+.page-head__title {
+  font-family: var(--font-display);
+  font-size: 50px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin-bottom: 20px;
+}
+.page-head__lead {
+  max-width: 620px;
+  font-size: 18px;
+  line-height: 1.75;
+  color: var(--mid);
+}
+
+@media (max-width: 860px) {
+  .hero { padding: 60px 0 48px; }
+  .hero__title { font-size: 34px; }
+  .page-head { padding: 54px 0 34px; }
+  .page-head__title { font-size: 36px; }
+}
+@media (max-width: 480px) {
+  .hero__title { font-size: 28px; line-height: 1.25; }
+  .hero__lead, .page-head__lead { font-size: 16.5px; }
+  .page-head__title { font-size: 30px; }
+
+  /* 터치 타깃 확보를 위해 세로로 쌓고 높이를 키운다 */
+  .hero__actions { flex-direction: column; align-items: stretch; }
+  .btn { width: 100%; padding: 14px 22px; }
+}
