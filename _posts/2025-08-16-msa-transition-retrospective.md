@@ -83,7 +83,6 @@ libs/
 그리고 `apps/*`는 실행 환경 레이어입니다. 도메인 로직이 `libs/domain` 한 곳에 모여 있어서, 동일 로직을 API / Consumer / Batch / Agent 어디에서나 그대로 호출할 수 있습니다.
 
 ```typescript
-// libs/domain/src/reception/services/receipt-create.service.ts
 @Injectable()
 export class ReceiptCreateService {
   async createReceipt(body: BulkRequestReceiptBody): Promise<HospitalReservation> {
@@ -91,6 +90,7 @@ export class ReceiptCreateService {
   }
 }
 ```
+{: data-file="receipt-create.service.ts"}
 
 ### 3.3 분리 단계 - API → 컬렉션 → DB
 
@@ -177,7 +177,6 @@ Kafka는 at-least-once 보장이라 컨슈머 쪽에서 순서와 중복을 감�
 - **중복·역순 이벤트** - 접수 도메인에 원래부터 있던 **상태 머신(`RECEPTION_STATE`) 기반 전이 정책**이 이 역할을 겸합니다. 현재 상태에서 허용되지 않는 전이는 원천 차단되는 정책이라, 중복 이벤트나 순서가 뒤바뀐 이벤트가 와도 대부분 자연스럽게 무시됩니다. Kafka 멱등성을 위해 따로 만든 계층은 아니고, 도메인 정책이 그 역할을 같이 합니다.
 
 ```typescript
-// apps/consumer/src/reception/controllers/reception.controller.ts
 @EventPattern(KAFKA_TOPIC_NAME.HOSPITAL_RESERVATION_CHANGE)
 @UseInterceptors(KafkaEventInterceptor)
 async changeHospitalReservation(
@@ -192,6 +191,7 @@ async changeHospitalReservation(
   await this.changeHospitalReservationUseCase.run(body);
 }
 ```
+{: data-file="reception.controller.ts"}
 
 접수·예약 상태 변경처럼 여러 도메인이 함께 반응해야 하는 시나리오는 분산 트랜잭션을 쓰지 않고 Domain Event를 Kafka로 발행해 연쇄 처리합니다. `HOSPITAL_RESERVATION_CHANGE` 토픽을 구독한 각 컨슈머가 캐시 정리·통계 반영·알림 발송을 독립적으로 수행합니다. 발행자(Reception)는 누가 듣는지 모르고, 구독자는 자신의 Bounded Context 안에서 자율적으로 처리합니다. 보상이 필요한 실패 케이스는 컨슈머에서 예외 로깅 후 재처리 큐로 넘기거나, 상태 머신이 허용하지 않는 전이면 명시적으로 무시합니다.
 
@@ -202,7 +202,6 @@ async changeHospitalReservation(
 예약 경합(동일 시간대 한 자리에 여러 사용자가 진입)은 분산 환경에서 가장 자주 터지는 장애 원인입니다. 이관 당시에는 Redis `SETNX` 기반 분산 락으로 구현했습니다. 시간 구간(5분) 단위로 키를 쪼개 병렬로 획득하고, 하나라도 실패하면 획득한 키를 전부 해제한 뒤 예외를 던지는 구조입니다.
 
 ```typescript
-// libs/domain/src/reception/services/request-reservation-lock.service.ts
 // LOCK_TTL = 60 * 1000 (1분), lock()은 SET key ts PX ttl NX
 const intervals = this.splitTimeRangeBy5Minutes(reservationTime, endTime);
 const keys = intervals.map(i =>
@@ -225,6 +224,7 @@ if (acquiredKeys.length !== keys.length) {
   );
 }
 ```
+{: data-file="request-reservation-lock.service.ts"}
 
 5분 단위로 쪼개는 이유는 진료 단위(timeUnit)가 병원마다 다르고(5~30분) 구간이 걸쳐 있는 예약 요청을 안전하게 직렬화하기 위해서입니다.
 

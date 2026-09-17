@@ -4,7 +4,7 @@ title: "MSA - 원칙, 아키텍처, 그리고 DB 분리"
 subtitle: "왜 하는지부터 서비스 경계, 아키텍처 유형, 데이터 일관성, DB 분리까지"
 date: 2026-07-09
 category: blog
-tags: [msa, architecture, event-driven, saga, database]
+tags: [MSA, Architecture, Event-Driven, Saga, Database]
 canonical_url: https://boostbrothers.github.io/2026-07-16-msa-principles-architecture-db-split/
 ---
 
