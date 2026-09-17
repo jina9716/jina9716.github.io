@@ -47,7 +47,7 @@
   <!-- Gateway -->
   <rect class="gateway" x="230" y="130" width="240" height="200" rx="8"/>
   <text class="heading" x="350" y="156" text-anchor="middle">API Gateway (BFF)</text>
-  <text class="small" x="350" y="174" text-anchor="middle">ddocdoc-api-gateway-monorepo</text>
+  <text class="small" x="350" y="174" text-anchor="middle">api-gateway-monorepo</text>
 
   <rect class="pkg" x="250" y="190" width="90" height="30" rx="4"/>
   <text class="small" x="295" y="210" text-anchor="middle">proxy</text>

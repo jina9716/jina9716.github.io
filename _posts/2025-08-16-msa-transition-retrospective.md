@@ -123,7 +123,7 @@ DB를 쪼개려던 목적은 두 가지였습니다. 도메인이 남의 컬렉�
 
 헬스케어 서비스에서 빅뱅 전환은 선택지가 아니었습니다. 접수 실패는 곧 환자의 진료 지연으로 이어집니다. Strangler Fig Pattern으로 `app-server`를 감싼 뒤 엔드포인트 단위로 대체해 나가기로 했습니다.
 
-실질적으로 이 역할을 맡은 건 BFF 성격의 **API Gateway 모노레포**(`ddocdoc-api-gateway-monorepo`)입니다. Gateway 안에는 `packages/proxy`가 라우팅 규칙을, `packages/fetch`가 HTTP 호출(재시도·타임아웃·캐싱·로깅)을, `packages/circuit-breaker`가 서킷 브레이커를 담당합니다. 엔드포인트별로 라우팅 규칙만 바꾸면 트래픽이 `app-server`에서 도메인 서버로 넘어갑니다. 배포와 라우팅 전환을 분리해 둔 덕분에 롤백 비용이 낮았습니다 - 문제가 보이면 라우팅만 되돌리면 됐습니다.
+실질적으로 이 역할을 맡은 건 BFF 성격의 **API Gateway 모노레포**(`api-gateway-monorepo`)입니다. Gateway 안에는 `packages/proxy`가 라우팅 규칙을, `packages/fetch`가 HTTP 호출(재시도·타임아웃·캐싱·로깅)을, `packages/circuit-breaker`가 서킷 브레이커를 담당합니다. 엔드포인트별로 라우팅 규칙만 바꾸면 트래픽이 `app-server`에서 도메인 서버로 넘어갑니다. 배포와 라우팅 전환을 분리해 둔 덕분에 롤백 비용이 낮았습니다 - 문제가 보이면 라우팅만 되돌리면 됐습니다.
 
 <img src="/assets/images/msa-transition/gateway-routing.svg" alt="API Gateway에서 legacy에서 도메인 서버로 라우팅 전환" />
 

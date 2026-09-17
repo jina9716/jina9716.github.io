@@ -243,10 +243,10 @@ tunnel.address = mongodb://<target>
 incr_sync.mongo_fetch_method = change_stream   # Atlas는 oplog 직접 접근 불가
 
 # 이관 대상 (원본 DB의 namespace만 읽는다)
-filter.namespace.white = ddocdoc.waiting-setups;ddocdoc.waitings
+filter.namespace.white = source_db.collection_a;source_db.collection_b
 
 # 원본 DB → 도메인 DB로 이름 변환하며 복제
-transform.namespace = ddocdoc.waiting-setups:ddocdoc-waitings.waiting-setups;ddocdoc.waitings:ddocdoc-waitings.waitings
+transform.namespace = source_db.collection_a:domain_db.collection_a;source_db.collection_b:domain_db.collection_b
 ```
 
 설정에서 눈여겨볼 건 filter.namespace.white입니다. 소스와 타겟이 같은 클러스터라, MongoShake가 타겟에 쓴 oplog를 자기가 다시 읽으면 복제가 복제를 부르는 loopback이 됩니다. 오픈소스판 MongoShake에는 Gid 기반 루프 방지가 빠져 있어 스스로 막아야 합니다. 이 구조에서는 두 겹으로 차단됩니다 - whitelist가 원본 DB의 namespace만 읽는데 MongoShake가 쓰는 대상은 전부 다른 DB의 namespace라 whitelist에 매칭될 수 없고, 원본 DB에 남긴 도메인은 애초에 자기 자신으로의 복제가 없습니다. 다만 이 차단은 whitelist/transform 설정이 맞다는 전제 위에 서 있으므로, 설정을 바꿀 때마다 loopback 테스트(oplog 소비량이 계속 증가하는지 관찰)를 다시 돌렸습니다.
