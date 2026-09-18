@@ -86,3 +86,11 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 40px 0; }
   :root { --gutter: 20px; }
   body { font-size: 16px; }
 }
+
+/* 동작 최소화를 켠 사용자에게는 애니메이션을 멈춘다. 마스코트는 첫 프레임에 선다 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

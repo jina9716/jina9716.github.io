@@ -6,13 +6,19 @@ title: Home
 <div class="container">
 
   <section class="hero">
-    <p class="mono-label hero__eyebrow">Backend Engineer</p>
-    <h1 class="hero__title">안녕하세요, 박진아입니다.</h1>
-    <p class="hero__lead">10년차 백엔드 개발자로, 검색 서비스 설계부터 데이터 파이프라인 구축, MSA 전환까지 다양한 도전을 이어가고 있습니다. 그 과정에서 내린 결정과 이유를 기록합니다.</p>
-    <div class="hero__actions">
-      <a class="btn btn--solid" href="{{ writing.first.url | relative_url }}">최신 글 읽기</a>
-      <a class="btn btn--ghost" href="{{ '/about' | relative_url }}">소개 보기</a>
+    <div class="hero__text">
+      <p class="mono-label hero__eyebrow">Backend Engineer</p>
+      <h1 class="hero__title">안녕하세요, 박진아입니다.</h1>
+      <p class="hero__lead">10년차 백엔드 개발자로, 검색 서비스 설계부터 데이터 파이프라인 구축, MSA 전환까지 다양한 도전을 이어가고 있습니다. 그 과정에서 내린 결정과 이유를 기록합니다.</p>
+      <div class="hero__actions">
+        <a class="btn btn--solid" href="{{ writing.first.url | relative_url }}">최신 글 읽기</a>
+        <a class="btn btn--ghost" href="{{ '/about' | relative_url }}">소개 보기</a>
+      </div>
     </div>
+    <button class="pet" type="button" aria-label="마스코트 상태 바꾸기">
+      <span class="pet__sprite" data-state="idle-greeting"></span>
+      <span class="pet__label"><span class="pet__label-text">대기 중</span><span class="pet__cursor" aria-hidden="true"></span></span>
+    </button>
   </section>
 
   <section>

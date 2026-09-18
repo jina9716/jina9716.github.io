@@ -1,6 +1,97 @@
 /* 홈 히어로, 지표 카드, 섹션 머리 */
 
-.hero { padding: 88px 0 64px; }
+.hero {
+  padding: 88px 0 64px;
+  display: grid;
+  /* 본문 칸을 본문 최대 폭에 고정하고 남는 폭을 마스코트 칸으로 준다.
+     본문에 이미 max-width 640px 가 걸려 있어 글 배치는 달라지지 않는다 */
+  grid-template-columns: minmax(0, 640px) 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+/* 마스코트. 클릭하면 상태가 넘어가고, 상태 안에서 두 프레임이 번갈아 돈다 */
+.pet {
+  /* 본문 끝과 컨테이너 오른쪽 끝 사이의 가운데. 세로는 중앙에서 조금 아래로 */
+  justify-self: center;
+  margin-top: 72px;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  user-select: none;
+}
+.pet__sprite {
+  /* 표시 배율은 이 값 하나로 정한다. 원본 도트 한 칸이 출력 한 칸이라 1배가 등배다.
+     정수배만 쓴다. 소수 배율은 프레임 경계가 픽셀에 안 떨어져서 세로줄이 생긴다.
+     시트는 가로에 프레임 2장, 세로에 상태 8줄이 들어간 86px 격자다 */
+  --pet-scale: 1;
+  width: calc(86px * var(--pet-scale));
+  height: calc(86px * var(--pet-scale));
+  background-image: url("/assets/pet/pet-sheet.png");
+  background-repeat: no-repeat;
+  background-size: calc(172px * var(--pet-scale)) calc(688px * var(--pet-scale));
+  image-rendering: pixelated;
+  animation: petFrames var(--pet-dur, 800ms) steps(2) infinite;
+}
+.pet__label {
+  /* 한글이라 자간을 넓히면 오히려 읽기 나쁘다. 색도 dim 은 본문과 대비가 모자란다 */
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--mid);
+}
+
+/* steps(2) 는 마지막 값에 닿지 않는다. 시트 두 칸 폭까지 적어야 0 과 한 칸이 나온다 */
+@keyframes petFrames {
+  from { background-position-x: 0; }
+  to   { background-position-x: calc(-172px * var(--pet-scale)); }
+}
+
+.pet__sprite[data-state="idle-greeting"] { background-position-y: calc(-86px * var(--pet-scale) * 0); --pet-dur: 1000ms; }
+.pet__sprite[data-state="deploy-success"] { background-position-y: calc(-86px * var(--pet-scale) * 1); --pet-dur: 500ms; }
+.pet__sprite[data-state="testing"] { background-position-y: calc(-86px * var(--pet-scale) * 2); --pet-dur: 700ms; }
+.pet__sprite[data-state="coffee"] { background-position-y: calc(-86px * var(--pet-scale) * 3); --pet-dur: 1200ms; }
+.pet__sprite[data-state="build-failed"] { background-position-y: calc(-86px * var(--pet-scale) * 4); --pet-dur: 500ms; }
+.pet__sprite[data-state="refactoring"] { background-position-y: calc(-86px * var(--pet-scale) * 5); --pet-dur: 400ms; }
+.pet__sprite[data-state="writing"] { background-position-y: calc(-86px * var(--pet-scale) * 6); --pet-dur: 600ms; }
+.pet__sprite[data-state="debugging"] { background-position-y: calc(-86px * var(--pet-scale) * 7); --pet-dur: 700ms; }
+
+/* 문구는 가만히 있다가 상태가 바뀔 때만 올라오며 나타난다.
+   강아지가 이미 제 주기로 돌고 있어서, 문구까지 계속 움직이면 리듬이 둘로 갈린다 */
+.pet__label-text {
+  display: inline-block;
+}
+.pet__label-text.is-in {
+  animation: labelIn 260ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+@keyframes labelIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 헤더 로고가 >_ 라서 터미널 커서가 이미 이 사이트의 표현이다.
+   글자를 움직이지 않으면서 상태가 살아 있다는 것만 알린다 */
+.pet__cursor {
+  display: inline-block;
+  width: 0.5em;
+  height: 1em;
+  margin-left: 0.3em;
+  vertical-align: -0.15em;
+  background: var(--dim);
+  animation: cursorBlink 1.1s linear infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
 .hero__eyebrow { margin-bottom: 18px; }
 .hero__title {
   font-size: 44px;
@@ -67,6 +158,12 @@
   font-size: 18px;
   line-height: 1.75;
   color: var(--mid);
+}
+
+@media (max-width: 1080px) {
+  /* 두 단을 유지할 폭이 안 되면 위아래로 쌓고 본문과 왼쪽을 맞춘다 */
+  .hero { grid-template-columns: minmax(0, 1fr); justify-items: start; gap: 36px; }
+  .pet { justify-self: start; margin-top: 0; }
 }
 
 @media (max-width: 860px) {

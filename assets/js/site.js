@@ -224,4 +224,33 @@
     dialog.addEventListener('click', function () { dialog.close(); });
   })();
 
+  /* ── 홈 마스코트 ───────────────────────────── */
+  (function pet() {
+    var btn = document.querySelector('.pet');
+    if (!btn) return;
+    var sprite = btn.querySelector('.pet__sprite');
+    var label = btn.querySelector('.pet__label-text');
+    var states = [
+      ['idle-greeting', '대기 중'],
+      ['deploy-success', '배포 성공'],
+      ['testing', '테스트 중'],
+      ['coffee', '커피 타임'],
+      ['build-failed', '빌드 실패'],
+      ['refactoring', '리팩토링 중'],
+      ['writing', '글 쓰는 중'],
+      ['debugging', '버그 추적 중']
+    ];
+    var i = 0;
+
+    btn.addEventListener('click', function () {
+      i = (i + 1) % states.length;
+      sprite.dataset.state = states[i][0];
+      label.textContent = states[i][1];
+      /* 클래스를 뗐다 붙이는 사이에 리플로우를 한 번 일으켜야 애니메이션이 다시 돈다 */
+      label.classList.remove('is-in');
+      void label.offsetWidth;
+      label.classList.add('is-in');
+    });
+  })();
+
 })();
