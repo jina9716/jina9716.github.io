@@ -24,26 +24,18 @@ work:
 skills:
   - TypeScript
   - Kotlin
-  - Java
   - Python
-  - Node.js
   - Nest.js
   - Spring Boot
   - MongoDB
   - PostgreSQL
-  - MySQL
   - Redis
   - Elasticsearch
   - Kafka
   - Snowflake
   - AWS
   - Kubernetes
-  - Docker
-  - ArgoCD
-  - Argo Workflow
-  - Datadog
-  - Grafana
-  - DDD
+  - Argo
 likes:
   - icon: game-controller
     title: "게임"
