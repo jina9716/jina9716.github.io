@@ -27,13 +27,13 @@
 .pet__sprite {
   /* 표시 배율은 이 값 하나로 정한다. 원본 도트 한 칸이 출력 한 칸이라 1배가 등배다.
      정수배만 쓴다. 소수 배율은 프레임 경계가 픽셀에 안 떨어져서 세로줄이 생긴다.
-     시트는 가로에 프레임 2장, 세로에 상태 8줄이 들어간 86px 격자다 */
+     시트는 가로에 프레임 2장, 세로에 상태 9줄이 들어간 86px 격자다 */
   --pet-scale: 1;
   width: calc(86px * var(--pet-scale));
   height: calc(86px * var(--pet-scale));
   background-image: url("/assets/pet/pet-sheet.png");
   background-repeat: no-repeat;
-  background-size: calc(172px * var(--pet-scale)) calc(688px * var(--pet-scale));
+  background-size: calc(172px * var(--pet-scale)) calc(774px * var(--pet-scale));
   image-rendering: pixelated;
   animation: petFrames var(--pet-dur, 800ms) steps(2) infinite;
 }
@@ -56,10 +56,11 @@
 .pet__sprite[data-state="deploy-success"] { background-position-y: calc(-86px * var(--pet-scale) * 1); --pet-dur: 500ms; }
 .pet__sprite[data-state="testing"] { background-position-y: calc(-86px * var(--pet-scale) * 2); --pet-dur: 700ms; }
 .pet__sprite[data-state="coffee"] { background-position-y: calc(-86px * var(--pet-scale) * 3); --pet-dur: 1200ms; }
-.pet__sprite[data-state="build-failed"] { background-position-y: calc(-86px * var(--pet-scale) * 4); --pet-dur: 500ms; }
+.pet__sprite[data-state="build-failed"] { background-position-y: calc(-86px * var(--pet-scale) * 4); --pet-dur: 550ms; }
 .pet__sprite[data-state="refactoring"] { background-position-y: calc(-86px * var(--pet-scale) * 5); --pet-dur: 400ms; }
 .pet__sprite[data-state="writing"] { background-position-y: calc(-86px * var(--pet-scale) * 6); --pet-dur: 600ms; }
 .pet__sprite[data-state="debugging"] { background-position-y: calc(-86px * var(--pet-scale) * 7); --pet-dur: 700ms; }
+.pet__sprite[data-state="barking"] { background-position-y: calc(-86px * var(--pet-scale) * 8); --pet-dur: 350ms; }
 
 /* 문구는 가만히 있다가 상태가 바뀔 때만 올라오며 나타난다.
    강아지가 이미 제 주기로 돌고 있어서, 문구까지 계속 움직이면 리듬이 둘로 갈린다 */

@@ -238,7 +238,8 @@
       ['build-failed', '빌드 실패'],
       ['refactoring', '리팩토링 중'],
       ['writing', '글 쓰는 중'],
-      ['debugging', '버그 추적 중']
+      ['debugging', '버그 추적 중'],
+      ['barking', '!#%&$']
     ];
     var i = 0;
 
@@ -246,6 +247,8 @@
       i = (i + 1) % states.length;
       sprite.dataset.state = states[i][0];
       label.textContent = states[i][1];
+      /* 버튼의 aria-label 이 내용을 가리므로, 지금 상태를 여기에 같이 넣는다 */
+      btn.setAttribute('aria-label', '마스코트 ' + states[i][1] + '눌러서 상태 바꾸기');
       /* 클래스를 뗐다 붙이는 사이에 리플로우를 한 번 일으켜야 애니메이션이 다시 돈다 */
       label.classList.remove('is-in');
       void label.offsetWidth;

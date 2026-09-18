@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""2x8 격자 한 장을 64x64 프레임 16장과 128x512 스프라이트시트로 만든다.
+"""생성 격자들을 86x86 프레임 18장과 172x774 스프라이트시트로 만든다.
 
     python3 _pet/build_sheet.py [--size N]
 
-표준 라이브러리만 쓴다. 흐름은 투명화 -> 셀 분할 -> 본체 검출 -> 64x64 재배치
--> 17색 양자화 -> 시트 병합이다.
+표준 라이브러리만 쓴다. 흐름은 투명화 -> 셀 분할 -> 본체 검출 -> 86x86 재배치
+-> 17색 양자화 -> A/B 정렬 -> 시트 병합이다.
 
 셀 경계를 신뢰하지 않는다는 원칙은 그대로 따르되, 정렬 기준을 프레임마다
 따로 잡지 않고 행마다 A 프레임 하나에서 뽑아 A 와 B 에 똑같이 적용한다.
@@ -23,39 +23,52 @@ sys.path.insert(0, str(Path(__file__).parent))
 from pngio import decode, encode  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-SHEET = Path(__file__).parent / 'source-grid.png'
+HERE = Path(__file__).parent
 OUT = ROOT / 'assets' / 'pet'
-ALIGNED = Path(__file__).parent / 'aligned'
-
-CELL_W, CELL_H = 512, 516
+ALIGNED = HERE / 'aligned'
 
 BACKGROUND = (253, 0, 251, 255)
 
+# 생성 격자들. 셀 높이는 파일마다 다르지만 도트 한 칸이 6px 로 같아서
+# 공통 배율 하나로 묶어도 개 크기가 행마다 어긋나지 않는다
+SOURCES = [
+    {'path': HERE / 'source-grid.png', 'cw': 512, 'ch': 516, 'cols': 2, 'rows': 8},
+    {'path': HERE / 'source-barking.png', 'cw': 512, 'ch': 484, 'cols': 2, 'rows': 1},
+]
+
+# 시트의 행 순서. (상태 이름, 격자 번호, 그 격자 안의 행 번호)
+LAYOUT = [
+    ('idle-greeting', 0, 0),
+    ('deploy-success', 0, 1),
+    ('testing', 0, 2),
+    ('coffee', 0, 3),
+    ('build-failed', 0, 4),
+    ('refactoring', 0, 5),
+    ('writing', 0, 6),
+    ('debugging', 0, 7),
+    ('barking', 1, 0),
+]
+
 # 원본 생성 단계에서 남은 결함을 배경색으로 덮는다.
-# deploy-success 의 B 프레임은 꼬리를 오른쪽으로 옮겨 그리면서 왼쪽 꼬리를 지우지
-# 않아 꼬리가 둘로 보인다. (상태 인덱스, 프레임 인덱스, x0, x1, y0, y1) 이고
-# 좌표는 셀 안에서 잰 값이다
+# (격자 번호, 격자 안의 행, 열, x0, x1, y0, y1) 이고 좌표는 셀 안에서 잰 값이다
 REPAIRS = [
-    # 꼬리가 몸통에 붙는 밑동까지 걷어내야 해서, 아래로 갈수록 좁아지는 모양을
-    # 사각형 세 개로 따라간다. 더 넓게 잡으면 엉덩이 실루엣이 잘린다.
-    # B 프레임은 A/B 정렬에서 원본을 8px 쯤 오른쪽으로 옮겨 보므로, 눈으로 잰
-    # 자리보다 오른쪽 경계를 그만큼 넉넉히 잡아야 밑동이 남지 않는다
-    (1, 1, 92, 160, 336, 419),
-    (1, 1, 100, 158, 420, 431),
-    (1, 1, 110, 152, 432, 441),
+    # barking 의 번개 표시가 셀 오른쪽으로 길게 뻗어 있다. 배율은 전 프레임이
+    # 함께 쓰는 값이라, 이 장식 하나 때문에 아홉 상태의 개가 모두 작아진다.
+    # 개는 x477 안쪽에 있으므로 번개 끝 네 칸만 자른다.
+    # 이 두 줄을 빼면 배율이 0.1605 에서 0.1467 로 떨어진다
+    (1, 0, 0, 478, 511, 0, 483),
+    (1, 0, 1, 478, 511, 0, 483),
 ]
 
 # 원본 도트 한 칸이 6px 이라 셀 512px 의 실제 도트 해상도는 85칸이다.
 # 86 은 거기에 맞춘 값이라 화면에서 확대하지 않고 1배로 쓸 수 있다.
 # 64 로 뽑으면 칸의 25%를 버리게 되고, 그걸 2배로 늘리면 뭉갠 자국이 커져 보인다
 SIZE = 86
-FOOT_Y = round(SIZE * 60 / 64)   # 발바닥이 놓이는 줄. 아래로 여유를 남긴다
+# 기준점을 놓는 줄. 줄일 때 마지막 줄이 살아남지 않아서 출력의 발바닥은 한 줄
+# 위(80)에 놓인다. 아래로 5칸 남는데 debugging 의 발밑 벌레가 그 칸을 쓴다
+FOOT_Y = round(SIZE * 60 / 64)
 CENTER_X = SIZE // 2
 FRAMES = ['a', 'b']
-STATES = [
-    'idle-greeting', 'deploy-success', 'testing', 'coffee',
-    'build-failed', 'refactoring', 'writing', 'debugging',
-]
 
 # 17색 고정 팔레트. 투명은 알파로 처리하므로 여기 넣지 않는다
 PALETTE = [
@@ -79,27 +92,31 @@ def is_background(px):
     return r > 150 and b > 150 and r - g > 60 and b - g > 55 and abs(r - b) < 70
 
 
-def repair(px):
-    """원본의 결함 영역을 배경색으로 덮는다. 본체를 재기 전에 부른다."""
-    for ri, ci, x0, x1, y0, y1 in REPAIRS:
-        for y in range(ri * CELL_H + y0, ri * CELL_H + y1 + 1):
+def repair(px, si):
+    """해당 격자의 결함 영역을 배경색으로 덮는다. 본체를 재기 전에 부른다."""
+    src = SOURCES[si]
+    for gi, ri, ci, x0, x1, y0, y1 in REPAIRS:
+        if gi != si:
+            continue
+        for y in range(ri * src['ch'] + y0, ri * src['ch'] + y1 + 1):
             row = px[y]
-            for x in range(ci * CELL_W + x0, ci * CELL_W + x1 + 1):
+            for x in range(ci * src['cw'] + x0, ci * src['cw'] + x1 + 1):
                 row[x] = BACKGROUND
 
 
-def cell_mask(px, ox, oy):
+def cell_mask(px, ox, oy, cw, ch):
     """셀 하나의 불투명 여부를 행별 bytearray 로."""
-    return [bytearray(0 if is_background(px[oy + y][ox + x]) else 1 for x in range(CELL_W))
-            for y in range(CELL_H)]
+    return [bytearray(0 if is_background(px[oy + y][ox + x]) else 1 for x in range(cw))
+            for y in range(ch)]
 
 
 def components(mask):
     """연결 성분을 (픽셀수, x0, x1, y0, y1) 로. 8방향으로 잇는다."""
-    seen = [bytearray(CELL_W) for _ in range(CELL_H)]
+    ch, cw = len(mask), len(mask[0])
+    seen = [bytearray(cw) for _ in range(ch)]
     out = []
-    for sy in range(CELL_H):
-        for sx in range(CELL_W):
+    for sy in range(ch):
+        for sx in range(cw):
             if not mask[sy][sx] or seen[sy][sx]:
                 continue
             stack = [(sy, sx)]
@@ -115,7 +132,7 @@ def components(mask):
                 for dy in (-1, 0, 1):
                     for dx in (-1, 0, 1):
                         ny, nx = cy + dy, cx + dx
-                        if 0 <= ny < CELL_H and 0 <= nx < CELL_W and mask[ny][nx] and not seen[ny][nx]:
+                        if 0 <= ny < ch and 0 <= nx < cw and mask[ny][nx] and not seen[ny][nx]:
                             seen[ny][nx] = 1
                             stack.append((ny, nx))
             out.append((n, x0, x1, y0, y1))
@@ -127,7 +144,7 @@ def nearest(color):
     return min(PALETTE, key=lambda q: sum((color[i] - q[i]) ** 2 for i in range(3)))
 
 
-def sample(px, ox, oy, xc, yb, scale):
+def sample(px, ox, oy, xc, yb, scale, cw, ch):
     """셀을 SIZE x SIZE 로 줄인다. 출력 픽셀마다 원본 영역의 최빈색을 쓴다.
 
     원본 도트 한 칸이 6px 인데 출력 한 픽셀이 그보다 커서, 한 점만 찍어 오면
@@ -146,9 +163,9 @@ def sample(px, ox, oy, xc, yb, scale):
             sy1 = yb + (oy_i + 1 - FOOT_Y) / scale
             seen = Counter()
             bg = total = 0
-            for y in range(max(int(sy0), 0), min(int(sy1) + 1, CELL_H)):
+            for y in range(max(int(sy0), 0), min(int(sy1) + 1, ch)):
                 line = px[oy + y]
-                for x in range(max(int(sx0), 0), min(int(sx1) + 1, CELL_W)):
+                for x in range(max(int(sx0), 0), min(int(sx1) + 1, cw)):
                     q = line[ox + x]
                     total += 1
                     if is_background(q):
@@ -160,9 +177,9 @@ def sample(px, ox, oy, xc, yb, scale):
                 continue
             bucket = seen.most_common(1)[0][0]
             exact = Counter()
-            for y in range(max(int(sy0), 0), min(int(sy1) + 1, CELL_H)):
+            for y in range(max(int(sy0), 0), min(int(sy1) + 1, ch)):
                 line = px[oy + y]
-                for x in range(max(int(sx0), 0), min(int(sx1) + 1, CELL_W)):
+                for x in range(max(int(sx0), 0), min(int(sx1) + 1, cw)):
                     q = line[ox + x]
                     if not is_background(q) and (q[0] >> 3, q[1] >> 3, q[2] >> 3) == bucket:
                         exact[(q[0], q[1], q[2])] += 1
@@ -218,45 +235,55 @@ def best_shift(fa, fb, reach=3):
 
 
 def main():
-    w, h, px = decode(SHEET)
-    if (w, h) != (CELL_W * 2, CELL_H * len(STATES)):
-        raise SystemExit(f'격자 크기가 예상과 다르다: {w}x{h}')
-    repair(px)
+    grids = []
+    for si, src in enumerate(SOURCES):
+        w, h, px = decode(src['path'])
+        if (w, h) != (src['cw'] * src['cols'], src['ch'] * src['rows']):
+            raise SystemExit(f"{src['path'].name} 격자 크기가 예상과 다르다: {w}x{h}")
+        repair(px, si)
+        opaque = sum(1 for r in px for p in r if not is_background(p))
+        print(f"{src['path'].name}  불투명 비율 {opaque / (w * h):.3f} (0.15~0.5 정상)")
+        grids.append(px)
 
-    opaque = sum(1 for r in px for p in r if not is_background(p))
-    print(f'투명화 후 불투명 비율 {opaque / (w * h):.3f} (0.15~0.5 정상)')
+    def origin(li, ci):
+        _, si, sr = LAYOUT[li]
+        src = SOURCES[si]
+        return si, ci * src['cw'], sr * src['ch'], src['cw'], src['ch']
 
     # 셀마다 본체(가장 큰 연결 성분)와 전체 내용 상자를 잰다
     body, content = {}, {}
-    for ri, state in enumerate(STATES):
-        for ci, fr in enumerate(FRAMES):
-            comps = components(cell_mask(px, ci * CELL_W, ri * CELL_H))
-            body[(ri, ci)] = comps[0]
-            content[(ri, ci)] = (min(c[1] for c in comps), max(c[2] for c in comps),
+    for li in range(len(LAYOUT)):
+        for ci in range(len(FRAMES)):
+            si, ox, oy, cw, ch = origin(li, ci)
+            comps = components(cell_mask(grids[si], ox, oy, cw, ch))
+            body[(li, ci)] = comps[0]
+            content[(li, ci)] = (min(c[1] for c in comps), max(c[2] for c in comps),
                                  min(c[3] for c in comps), max(c[4] for c in comps))
 
     # 행마다 A 프레임에서 기준점을 뽑는다
-    anchor = {ri: ((body[(ri, 0)][1] + body[(ri, 0)][2]) / 2, body[(ri, 0)][4])
-              for ri in range(len(STATES))}
+    anchor = {li: ((body[(li, 0)][1] + body[(li, 0)][2]) / 2, body[(li, 0)][4])
+              for li in range(len(LAYOUT))}
 
-    # 모든 셀의 내용이 64x64 안에 들어가는 가장 큰 배율을 고른다.
+    # 모든 셀의 내용이 캔버스 안에 들어가는 가장 큰 배율을 고른다.
     # 머리 위 체크와 등 뒤 불꽃 같은 액센트까지 포함한 상자로 따진다.
     # 가장자리에 1px 을 남겨서 액센트가 캔버스 끝에 붙지 않게 한다
     margin = 1
     scale = min(
         limit
-        for ri in range(len(STATES))
+        for li in range(len(LAYOUT))
         for ci in range(len(FRAMES))
         for limit in (
-            (CENTER_X - margin) / max(anchor[ri][0] - content[(ri, ci)][0], 1e-9),
-            (SIZE - 1 - margin - CENTER_X) / max(content[(ri, ci)][1] - anchor[ri][0], 1e-9),
-            (FOOT_Y - margin) / max(anchor[ri][1] - content[(ri, ci)][2], 1e-9),
-            (SIZE - 1 - margin - FOOT_Y) / max(content[(ri, ci)][3] - anchor[ri][1], 1e-9),
+            (CENTER_X - margin) / max(anchor[li][0] - content[(li, ci)][0], 1e-9),
+            (SIZE - 1 - margin - CENTER_X) / max(content[(li, ci)][1] - anchor[li][0], 1e-9),
+            (FOOT_Y - margin) / max(anchor[li][1] - content[(li, ci)][2], 1e-9),
+            (SIZE - 1 - margin - FOOT_Y) / max(content[(li, ci)][3] - anchor[li][1], 1e-9),
         )
     )
-    print(f'공통 배율 {scale:.4f} (원본 {1 / scale:.1f}px -> 출력 1px), '
-          f'본체 높이 {body[(0, 0)][4] - body[(0, 0)][3] + 1} -> '
-          f'{round((body[(0, 0)][4] - body[(0, 0)][3] + 1) * scale)}px')
+    print(f'공통 배율 {scale:.4f} (원본 {1 / scale:.1f}px -> 출력 1px)')
+
+    def take(li, ci, xc, yb):
+        si, ox, oy, cw, ch = origin(li, ci)
+        return sample(grids[si], ox, oy, xc, yb, scale, cw, ch)
 
     # 본체 최하단을 원본에서 재서 기준점을 잡았지만, 줄일 때 마지막 줄이 살아남는지는
     # 그 줄에 원본 픽셀이 얼마나 걸리느냐에 달려 있어 행마다 1px 씩 갈린다.
@@ -265,23 +292,22 @@ def main():
         return max(y for y in range(SIZE)
                    if sum(1 for c in frame[y] if c) >= 4)
 
-    probe = {ri: body_bottom(sample(px, 0, ri * CELL_H, *anchor[ri], scale))
-             for ri in range(len(STATES))}
+    probe = {li: body_bottom(take(li, 0, *anchor[li])) for li in range(len(LAYOUT))}
     target = Counter(probe.values()).most_common(1)[0][0]
-    for ri, got in probe.items():
+    for li, got in probe.items():
         if got != target:
-            xc, yb = anchor[ri]
-            anchor[ri] = (xc, yb - (target - got) / scale)
+            xc, yb = anchor[li]
+            anchor[li] = (xc, yb - (target - got) / scale)
     print(f'발바닥 줄 {target} 로 정렬 '
-          f'(보정한 행 {[STATES[ri] for ri, g in probe.items() if g != target] or "없음"})')
+          f'(보정한 행 {[LAYOUT[li][0] for li, g in probe.items() if g != target] or "없음"})')
 
     ALIGNED.mkdir(parents=True, exist_ok=True)
     frames = {}
     print('행: A/B 다른 픽셀 (정렬 전 -> 정렬 후, 옮긴 양)')
-    for ri, state in enumerate(STATES):
-        xc, yb = anchor[ri]
-        fa = sample(px, 0, ri * CELL_H, xc, yb, scale)
-        fb = sample(px, CELL_W, ri * CELL_H, xc, yb, scale)
+    for li, (state, si, sr) in enumerate(LAYOUT):
+        xc, yb = anchor[li]
+        fa = take(li, 0, xc, yb)
+        fb = take(li, 1, xc, yb)
 
         # B 가 셀 안에서 밀려 그려진 만큼을 되돌린다. 출력 한 칸 단위로 대강 찾은 뒤
         # 잘게 흔들어 보고, 고른 양만큼 원본 좌표에서 다시 뽑는다.
@@ -291,26 +317,24 @@ def main():
         best = (diff_count(fa, fb), 0.0, 0.0, fb)
         for sx in (dx - 0.5, dx - 0.25, dx, dx + 0.25, dx + 0.5):
             for sy in (dy - 0.5, dy, dy + 0.5):
-                cand = sample(px, CELL_W, ri * CELL_H,
-                              xc - sx / scale, yb - sy / scale, scale)
+                cand = take(li, 1, xc - sx / scale, yb - sy / scale)
                 n = diff_count(fa, cand)
                 if n < best[0]:
                     best = (n, sx, sy, cand)
-        frames[(ri, 0)], frames[(ri, 1)] = fa, best[3]
+        frames[(li, 0)], frames[(li, 1)] = fa, best[3]
         print(f'  {state:15} {diff_count(fa, fb):5} -> {best[0]:5}  '
               f'(dx{best[1]:+.2f} dy{best[2]:+.2f})')
 
         for ci, fr in enumerate(FRAMES):
             rgba = [[c + (255,) if c else (0, 0, 0, 0) for c in row]
-                    for row in frames[(ri, ci)]]
+                    for row in frames[(li, ci)]]
             (ALIGNED / f'{state}_{fr}.png').write_bytes(encode(rgba))
 
-    # 128x512 시트. 행 순서는 STATES 그대로
-    sheet = [frames[(ri, 0)][y] + frames[(ri, 1)][y]
-             for ri in range(len(STATES)) for y in range(SIZE)]
+    sheet = [frames[(li, 0)][y] + frames[(li, 1)][y]
+             for li in range(len(LAYOUT)) for y in range(SIZE)]
     path = OUT / 'pet-sheet.png'
     path.write_bytes(encode_indexed(sheet))
-    print(f'{path.relative_to(ROOT)}  {SIZE * 2}x{SIZE * len(STATES)}  '
+    print(f'{path.relative_to(ROOT)}  {SIZE * 2}x{SIZE * len(LAYOUT)}  '
           f'{path.stat().st_size}B')
 
 

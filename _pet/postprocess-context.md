@@ -5,8 +5,17 @@
 
 ## 전제
 
-나노바나나에서 2×8 격자 **한 장**으로 받았다. 가로 2프레임(A/B) × 세로 8상태가
-한 장에 들어 있다. 원본은 `_pet/source-grid.png` 이고 크기는 1024×4128, 셀은 512×516 으로 정확히 균등하게 나뉜다.
+나노바나나에서 격자로 받는다. 가로가 A/B 두 프레임이고 세로가 상태다.
+
+    _pet/source-grid.png     1024×4128   2×8   셀 512×516   기존 8상태
+    _pet/source-barking.png  1024×484    2×1   셀 512×484   barking
+
+두 장은 따로 생성됐지만 도트 한 칸이 6px 로 같아서 공통 배율 하나로 묶어도 개
+크기가 행마다 어긋나지 않는다. 어느 격자의 몇 번째 행을 시트의 어느 줄에 놓을지는
+`LAYOUT` 에 적는다.
+
+프레임을 낱장으로 받으면 안 된다. 같은 그림을 크게 뽑아 주면 도트 한 칸이 커져서
+배율을 따로 잡아야 하고, A 와 B 의 좌표계가 갈려서 기준점 공유도 깨진다.
 
 생성 결과에는 안티에일리어싱과 팔레트를 벗어난 색이 섞여 있고, 배경 마젠타도
 단색이 아니라 잡티가 섞인 면이다.
@@ -15,9 +24,9 @@
 
 - 셀 **86×86**, 투명 배경 PNG
 - 팔레트 17색 정확히 준수
-- 가로 2프레임(A/B) × 세로 8상태 = **172×688**
+- 가로 2프레임(A/B) × 세로 9상태 = **172×774**
 - 행 순서: idle-greeting, deploy-success, testing, coffee,
-  build-failed, refactoring, writing, debugging
+  build-failed, refactoring, writing, debugging, barking
 
 ### 셀을 64 가 아니라 86 으로 잡은 이유
 
@@ -45,12 +54,12 @@ ImageMagick, Pillow, pngquant, oxipng 가 모두 설치되어 있지 않아서 �
 
 ## 파일 명명 규칙
 
-    _pet/source-grid.png                                     원본 격자
-    _pet/aligned/<state>_<frame>.png                         정렬 완료 프레임 16장
+    _pet/source-grid.png, source-barking.png                 원본 격자
+    _pet/aligned/<state>_<frame>.png                         정렬 완료 프레임 18장
     assets/pet/pet-sheet.png                                 최종 시트
 
     state = idle-greeting | deploy-success | testing | coffee |
-            build-failed | refactoring | writing | debugging
+            build-failed | refactoring | writing | debugging | barking
     frame = a | b
 
 `raw/` 와 `clean/` 은 따로 만들지 않는다. 한 스크립트가 한 번에 처리하므로
@@ -71,6 +80,10 @@ deploy-success 의 B 프레임은 꼬리를 오른쪽으로 옮겨 그리면서 
 꼬리가 몸통 외곽선에 붙는 밑동까지 걷어내야 해서 사각형 하나로는 되지 않는다.
 아래로 갈수록 좁아지는 모양을 사각형 세 개로 따라간다. 더 넓게 잡으면 엉덩이
 실루엣이 잘리고, 좁게 잡으면 밑동이 남는다.
+
+barking 의 번개 표시는 셀 오른쪽 끝까지 뻗어 있다. 배율은 전 프레임이 함께 쓰는
+값이라 이 장식 하나 때문에 아홉 상태의 개가 모두 작아진다. 개는 x477 안쪽에
+있으므로 번개 끝 네 칸만 잘라 배율을 되돌린다.
 
 경계를 정할 때 주의할 점이 하나 있다. B 프레임은 6단계 정렬에서 원본을 8px 쯤
 오른쪽으로 옮겨 다시 샘플링한다. 그래서 A 프레임 좌표로 잰 자리보다 오른쪽
@@ -106,8 +119,7 @@ A 와 B 에 똑같이 적용한다.
 
 배율은 16셀의 내용이 전부 캔버스 안에 들어가는 가장 큰 값으로 정한다. 머리 위
 체크와 등 뒤 불꽃까지 포함한 상자로 따지고, 가장자리에 1px 을 남긴다.
-결과는 **0.1646** 이고, 출력 1픽셀이 원본 6.1px 에 해당한다. 본체 높이 453px 이
-75px 이 된다.
+결과는 **0.1605** 이고, 출력 1픽셀이 원본 6.2px 에 해당한다.
 
 ## 4단계: 64×64 재배치
 
@@ -139,7 +151,7 @@ A 와 B 에 똑같이 적용한다.
 
 ## 6단계: A/B 프레임 정렬
 
-**B 프레임이 셀 안에서 밀려 그려져 있다.** 8행 중 5행에서 가로로 같은 방향의
+**B 프레임이 셀 안에서 밀려 그려져 있다.** 9행 중 6행에서 가로로 같은 방향의
 어긋남이 나왔다.
 
 출력 한 칸 단위로 대강 찾은 뒤, **고른 양만큼 원본 좌표에서 다시 뽑는다.**
@@ -151,14 +163,15 @@ A 와 B 에 똑같이 적용한다.
 오른쪽 실루엣에 A 만, 왼쪽에 B 만 한 줄씩 남는 형태로 드러났다.
 
     행               정렬 전 -> 정렬 후   옮긴 양
-    idle-greeting      1598  ->  1374    dx-1.00 dy-0.50
-    deploy-success     1183  ->   720    dx-1.25
-    testing            1136  ->   237    dx-1.25
-    coffee             1570  ->  1267    dx-1.25
-    build-failed       1871  ->  1822    dx-1.25 dy-0.50
-    refactoring        1124  ->   677    dx-1.25
-    writing            1298  ->  1283    dx+0.25 dy-0.50
-    debugging          2468  ->  2014    dx-3.50 dy-0.50
+    idle-greeting      1530  ->  1318    dx-1.25
+    deploy-success     1188  ->   699    dx-1.25
+    testing            1082  ->   240    dx-1.25
+    coffee             1503  ->  1201    dx-1.25
+    build-failed       1739  ->  1731    dx-0.25
+    refactoring        1076  ->   643    dx-1.25
+    writing            1241  ->  1205    dx+0.25 dy-0.50
+    debugging          2352  ->  1901    dx-3.25
+    barking            1808  ->  1553    dx+0.50 dy+2.50
 
 **남은 차이는 평행이동으로 줄지 않는다.** build-failed 와 debugging 은 A 와 B 가
 사실상 다른 포즈로 그려져 있다. build-failed 의 A 는 귀를 접고 얼굴을 가린 자세이고
@@ -167,7 +180,7 @@ A 를 픽셀 시프트해서 만드는 쪽이 맞지만, 어떻게 움직일지�
 
 ## 7단계: 시트 병합
 
-행 순서를 지켜서 가로로 A, B 를 붙이고 세로로 8행을 쌓는다. 결과는 172×688 이다.
+행 순서를 지켜서 가로로 A, B 를 붙이고 세로로 9행을 쌓는다. 결과는 172×774 이다.
 
 ## 8단계: 최적화
 
@@ -187,7 +200,7 @@ pngquant 와 oxipng 가 없어서 **인덱스 PNG**(컬러타입 3)로 직접 �
       height: calc(86px * var(--pet-scale));
       background-image: url("/assets/pet/pet-sheet.png");
       background-repeat: no-repeat;
-      background-size: calc(172px * var(--pet-scale)) calc(688px * var(--pet-scale));
+      background-size: calc(172px * var(--pet-scale)) calc(774px * var(--pet-scale));
       image-rendering: pixelated;
       animation: petFrames var(--pet-dur, 800ms) steps(2) infinite;
     }
@@ -207,6 +220,7 @@ pngquant 와 oxipng 가 없어서 **인덱스 PNG**(컬러타입 3)로 직접 �
     refactoring       5    calc(-86px * scale * 5)       400ms
     writing           6    calc(-86px * scale * 6)       600ms
     debugging         7    calc(-86px * scale * 7)       700ms
+    barking           8    calc(-86px * scale * 8)       350ms
 
 build-failed 는 원래 300ms 로 잡았는데 실제로 보니 나머지와 견주어 지나치게 빨라서
 500ms 로 올렸다.
@@ -219,7 +233,8 @@ A 프레임에 선다.
 
 ### 상태 문구
 
-클릭하면 다음 순서로 넘어간다. 문구는 `assets/js/site.js` 에 있다.
+클릭하면 다음 순서로 넘어간다. 문구는 `assets/js/site.js` 에 있다. 버튼의
+`aria-label` 이 내용을 가리므로, 상태가 바뀔 때 거기에도 지금 문구를 넣는다.
 
     idle-greeting     대기 중
     deploy-success    배포 성공
@@ -229,12 +244,13 @@ A 프레임에 선다.
     refactoring       리팩토링 중
     writing           글 쓰는 중
     debugging         버그 추적 중
+    barking           아르르...
 
 ## 검수 결과
 
-    172x688, 10331B 인덱스 PNG
+    172x774, 11659B 인덱스 PNG
     팔레트 17색 준수 (17/17 전부 사용, 팔레트 밖 색 없음)
     알파 0/255만. 디더링과 안티에일리어싱 없음
-    16셀 모두 가장자리에 닿지 않음
+    18셀 모두 가장자리에 닿지 않음
     프레임 하나가 쓰는 색 최대 14개
-    A 프레임 8종 발바닥 전부 y=80
+    A 프레임 9종 발바닥 전부 y=80
