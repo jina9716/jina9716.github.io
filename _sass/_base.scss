@@ -67,6 +67,20 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 40px 0; }
   color: var(--dim);
 }
 
+/* 눈으로 볼 필요는 없고 스크린 리더만 읽어야 하는 문구.
+   display:none 은 읽히지도 않으므로, 크기를 없애고 잘라내는 방식을 쓴다 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 .skip-link {
   position: absolute;
   left: -9999px;

@@ -54,7 +54,7 @@
 
 .pet__sprite[data-state="idle-greeting"] { background-position-y: calc(-86px * var(--pet-scale) * 0); --pet-dur: 1000ms; }
 .pet__sprite[data-state="deploy-success"] { background-position-y: calc(-86px * var(--pet-scale) * 1); --pet-dur: 500ms; }
-.pet__sprite[data-state="testing"] { background-position-y: calc(-86px * var(--pet-scale) * 2); --pet-dur: 700ms; }
+.pet__sprite[data-state="daydreaming"] { background-position-y: calc(-86px * var(--pet-scale) * 2); --pet-dur: 1000ms; }
 .pet__sprite[data-state="coffee"] { background-position-y: calc(-86px * var(--pet-scale) * 3); --pet-dur: 1200ms; }
 .pet__sprite[data-state="build-failed"] { background-position-y: calc(-86px * var(--pet-scale) * 4); --pet-dur: 550ms; }
 .pet__sprite[data-state="refactoring"] { background-position-y: calc(-86px * var(--pet-scale) * 5); --pet-dur: 400ms; }

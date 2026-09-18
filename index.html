@@ -15,10 +15,35 @@ title: Home
         <a class="btn btn--ghost" href="{{ '/about' | relative_url }}">소개 보기</a>
       </div>
     </div>
-    <button class="pet" type="button" aria-label="마스코트 눌러서 상태 바꾸기">
+    <button class="pet" type="button">
       <span class="pet__sprite" data-state="idle-greeting"></span>
-      <span class="pet__label"><span class="pet__label-text">대기 중</span><span class="pet__cursor" aria-hidden="true"></span></span>
+      <span class="pet__label"><span class="pet__label-text">LGTM ♥</span><span class="pet__cursor" aria-hidden="true"></span></span>
+      <span class="sr-only">마스코트. 눌러서 상태 바꾸기</span>
     </button>
+    <script>
+      /* 상태 목록을 여기에 두고 site.js 가 읽어 간다.
+         site.js 는 defer 라 첫 페인트 뒤에 실행되어, 거기서 상태를 정하면 위 마크업이 한 번 보였다 바뀐다 */
+      window.PET_STATES = [
+        /* entry 가 true 인 것만 진입 랜덤에 넣는다.
+           배포 성공처럼 방금 무슨 일이 일어났다는 뜻인 상태는, 아직 아무것도 누르지 않은 첫 화면에서는 무엇에 대한 결과인지 알 수 없다 */
+        ['idle-greeting', 'LGTM ♥', true],
+        ['deploy-success', '배포 성공'],
+        ['daydreaming', '멍때리는 중', true],
+        ['coffee', '커피 타임', true],
+        ['build-failed', '빌드 실패'],
+        ['refactoring', '리팩토링 중', true],
+        ['writing', '글 쓰는 중', true],
+        ['debugging', '버그 추적 중', true],
+        ['barking', '!#%&$']
+      ];
+      (function () {
+        var btn = document.currentScript.previousElementSibling;
+        var pool = window.PET_STATES.filter(function (s) { return s[2]; });
+        var state = pool[Math.floor(Math.random() * pool.length)];
+        btn.querySelector('.pet__sprite').dataset.state = state[0];
+        btn.querySelector('.pet__label-text').textContent = state[1];
+      })();
+    </script>
   </section>
 
   <section>
